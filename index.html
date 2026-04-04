@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>CL-Stats</title>
+    <meta name="theme-color" content="#0a0e17">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0a0e17;--bg2:#161b28;--bg3:#1a2030;--bg-in:#141824;--bg-dd:#1a1f2e;
+            --brd:#252a3a;--brd2:#2a2f3e;--t1:#e0e0e0;--t2:#888;--t3:#ccc;--tv:#fff;
+            --acc:#f5a623;--acc2:#e8852a;--hover:#1e2438;
+        }
+        [data-theme="light"]{
+            --bg:#f0f2f5;--bg2:#fff;--bg3:#f8f9fa;--bg-in:#fff;--bg-dd:#fff;
+            --brd:#dde1e6;--brd2:#c0c5cc;--t1:#1a1a2e;--t2:#666;--t3:#333;--tv:#111;
+            --acc:#e8852a;--acc2:#d4700a;--hover:#f0f4ff;
+        }
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;transition:background .3s,color .3s}
+        .container{max-width:1200px;margin:0 auto;padding:15px}
+
+        /* Header */
+        header{text-align:center;padding:20px 0 10px;position:relative}
+        header h1{font-size:2.2rem;background:linear-gradient(135deg,#f5a623,#e8852a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .subtitle{color:var(--t2);margin-top:4px;font-size:.9rem}
+
+        /* Top controls */
+        .top-controls{display:flex;justify-content:center;gap:8px;margin:10px 0;flex-wrap:wrap;align-items:center}
+        .top-btn{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:.85rem;color:var(--t2);transition:all .2s;display:flex;align-items:center;gap:4px}
+        .top-btn:hover{border-color:var(--acc);color:var(--t1)}
+        .lang-select{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:5px 10px;color:var(--t1);font-size:.85rem;cursor:pointer;outline:none}
+        .lang-select:focus{border-color:var(--acc)}
+
+        /* Search */
+        .search-box{display:flex;justify-content:center;gap:8px;margin:15px auto;position:relative;max-width:500px}
+        .search-box input{flex:1;padding:11px 16px;border:2px solid var(--brd);border-radius:8px;background:var(--bg-in);color:var(--t1);font-size:1rem;outline:none;transition:border-color .2s}
+        .search-box input:focus{border-color:var(--acc)}
+        .btn{padding:10px 22px;background:linear-gradient(135deg,#f5a623,#e8852a);border:none;border-radius:8px;color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;transition:opacity .2s}
+        .btn:hover{opacity:.85}
+        .btn-sm{padding:6px 14px;font-size:.85rem;border-radius:6px}
+        .btn-danger{background:linear-gradient(135deg,#e74c3c,#c0392b)!important}
+        .btn-secondary{background:linear-gradient(135deg,#5cc9e8,#3498db)!important}
+        .btn-ghost{background:transparent;border:1px solid var(--brd);color:var(--t2)}
+        .btn-ghost:hover{border-color:var(--acc);color:var(--t1)}
+
+        .search-results{position:absolute;top:100%;left:0;right:0;background:var(--bg-dd);border:1px solid var(--brd);border-radius:8px;margin-top:4px;z-index:100;max-height:280px;overflow-y:auto}
+        .result-item{padding:10px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+        .result-item:last-child{border-bottom:none}
+        .result-item:hover{background:var(--hover)}
+        .result-item .nickname{font-weight:600;color:var(--acc)}
+        .result-item .account-id{font-size:.8rem;color:var(--t2)}
+        .result-item .save-icon{font-size:1.1rem;cursor:pointer;padding:2px 6px;opacity:.5;transition:opacity .2s}
+        .result-item .save-icon:hover,.result-item .save-icon.saved{opacity:1;color:var(--acc)}
+
+        .hidden{display:none!important}
+
+        /* Saved profiles */
+        .profiles-section{margin:10px auto;max-width:500px}
+        .profiles-title{font-size:.85rem;color:var(--t2);margin-bottom:6px}
+        .profiles-list{display:flex;gap:6px;flex-wrap:wrap}
+        .profile-chip{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:.85rem;color:var(--t1);transition:all .2s}
+        .profile-chip:hover{border-color:var(--acc)}
+        .profile-chip .remove{font-size:.75rem;color:var(--t2);margin-left:2px;cursor:pointer}
+        .profile-chip .remove:hover{color:#e74c3c}
+
+        /* Player */
+        .player-header{text-align:center;margin:15px 0 20px}
+        .player-header h2{font-size:1.6rem;color:var(--acc);display:inline}
+        .last-battle{display:block;color:var(--t2);font-size:.82rem;margin-top:4px}
+
+        /* Tabs */
+        .tabs{display:flex;justify-content:center;gap:4px;margin:15px 0;flex-wrap:wrap}
+        .tab-btn{padding:9px 20px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;color:var(--t2);font-size:.9rem;cursor:pointer;transition:all .2s}
+        .tab-btn:hover{border-color:var(--acc);color:var(--t1)}
+        .tab-btn.active{background:linear-gradient(135deg,#f5a623,#e8852a);color:#fff;border-color:transparent;font-weight:600}
+        .tab-content{display:none}.tab-content.active{display:block}
+
+        /* Stats */
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:25px}
+        .stat-card{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:16px;text-align:center;transition:transform .2s,border-color .2s}
+        .stat-card:hover{transform:translateY(-2px);border-color:#f5a62355}
+        .stat-value{font-size:1.4rem;font-weight:700;color:var(--tv)}
+        .stat-label{font-size:.8rem;color:var(--t2);margin-top:4px;text-transform:uppercase}
+
+        /* Charts */
+        .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:25px}
+        .chart-container{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:15px}
+        .chart-container h3{color:var(--t3);margin-bottom:10px;font-size:.95rem}
+
+        /* Tables */
+        .tanks-section{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:15px}
+        .tanks-section h3{color:var(--t3);margin-bottom:12px}
+        .tank-filters{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+        .tank-filters select{padding:7px 10px;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;color:var(--t1);font-size:.85rem;outline:none;cursor:pointer}
+        .tank-filters select:focus{border-color:var(--acc)}
+
+        .table-wrap{max-height:600px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        table{width:100%;border-collapse:collapse}
+        thead{position:sticky;top:0;z-index:10}
+        th{background:var(--bg3);color:var(--acc);padding:9px 10px;text-align:left;font-weight:600;font-size:.82rem;border-bottom:2px solid #f5a62333}
+        th.sortable{cursor:pointer;user-select:none;transition:color .2s}
+        th.sortable:hover{color:#fff}
+        th.sortable::after{content:'';margin-left:4px;font-size:.7rem;opacity:.4}
+        th.sort-asc::after{content:'\25B2';opacity:1}
+        th.sort-desc::after{content:'\25BC';opacity:1}
+        td{padding:9px 10px;border-bottom:1px solid var(--brd);font-size:.85rem}
+        tbody tr:hover{background:var(--hover)}
+
+        .tank-name-cell{display:flex;align-items:center;gap:6px}
+        .tank-name-cell img{width:36px;height:auto;border-radius:3px}
+        .premium{color:var(--acc);font-weight:600}
+
+        .wr-avg{color:#999}.wr-good{color:#7ecb54}.wr-great{color:#5cc9e8}.wr-unicum{color:#b36ce8}
+
+        /* Session */
+        .session-controls{display:flex;gap:8px;align-items:center;margin-bottom:15px;flex-wrap:wrap}
+        .session-info{color:var(--t2);font-size:.82rem;padding:6px 12px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px}
+        .session-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:15px}
+        .session-stat-card{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:8px 4px;text-align:center}
+        .session-stat-card .stat-value{font-size:1.1rem}
+        .drag-handle{cursor:grab;font-size:1.2rem;color:var(--t2);user-select:none;transition:color .2s}
+        .drag-handle:hover{color:var(--acc)}
+        .sess-draggable.dragging{opacity:.4;border-style:dashed}
+        .sess-draggable.drag-over{border-color:var(--acc);box-shadow:0 0 10px rgba(245,166,35,.3)}
+        #helpContent h4{color:var(--acc);margin:18px 0 6px;font-size:.95rem}
+        #helpContent h4:first-child{margin-top:0}
+        #helpContent p{color:var(--t1);font-size:.88rem;margin-bottom:8px}
+        #helpContent ol{margin:6px 0 10px 20px;font-size:.88rem;color:var(--t1)}
+        #helpContent li{margin-bottom:4px}
+        .no-session{text-align:center;padding:50px 20px;color:var(--t2)}
+        .no-session p{margin-bottom:12px;font-size:.95rem}
+
+        /* Loading */
+        .loading{text-align:center;padding:30px;color:var(--t2)}
+        .loading::after{content:'';display:inline-block;width:18px;height:18px;border:2px solid var(--acc);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;margin-left:8px;vertical-align:middle}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        ::-webkit-scrollbar{width:7px}
+        ::-webkit-scrollbar-track{background:var(--bg)}
+        ::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--brd2)}
+
+        @media(max-width:768px){
+            .stats-grid,.session-stats-grid{grid-template-columns:repeat(2,1fr)}
+            .charts-row{grid-template-columns:1fr}
+            header h1{font-size:1.8rem}
+            .stat-value{font-size:1.2rem}
+            td,th{padding:7px 6px;font-size:.78rem}
+            .tank-name-cell img{width:28px}
+        }
+        @media(max-width:400px){
+            .stats-grid,.session-stats-grid{grid-template-columns:1fr 1fr}
+            .container{padding:10px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CL-Stats</h1>
+            <p class="subtitle" data-i18n="subtitle"></p>
+        </header>
+
+        <div class="top-controls">
+            <button class="top-btn" id="themeToggle"><span id="themeIcon">&#9790;</span></button>
+            <select class="lang-select" id="langSelect">
+                <option value="uk">UA Українська</option>
+                <option value="ru">RU Русский</option>
+                <option value="en">EN English</option>
+                <option value="uz">UZ O'zbekcha</option>
+            </select>
+            <button class="top-btn" onclick="exportData()" data-i18n="exportBtn"></button>
+            <button class="top-btn" onclick="document.getElementById('importFile').click()" data-i18n="importBtn"></button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+
+        <!-- Search -->
+        <div class="search-box">
+            <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" autocomplete="off">
+            <button class="btn" id="searchBtn" data-i18n="searchBtn"></button>
+            <div id="searchResults" class="search-results hidden"></div>
+        </div>
+
+        <!-- Saved Profiles -->
+        <div class="profiles-section" id="profilesSection">
+            <div class="profiles-title" data-i18n="savedProfiles"></div>
+            <div class="profiles-list" id="profilesList"></div>
+        </div>
+
+        <!-- Player Section -->
+        <div id="playerSection" class="hidden">
+            <div class="player-header">
+                <h2 id="playerName"></h2>
+                <span id="lastBattle" class="last-battle"></span>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="overview" data-i18n="tabOverview"></button>
+                <button class="tab-btn" data-tab="tanks" data-i18n="tabTanks"></button>
+                <button class="tab-btn" data-tab="session" data-i18n="tabSession"></button>
+                <button class="tab-btn" data-tab="rating" data-i18n="tabRating"></button>
+                <button class="tab-btn" data-tab="compare" data-i18n="tabCompare"></button>
+                <button class="tab-btn" data-tab="help" data-i18n="tabHelp"></button>
+            </div>
+
+            <!-- Overview -->
+            <div class="tab-content active" id="tab-overview">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-value" id="statBattles">—</div><div class="stat-label" data-i18n="battles"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statWinrate">—</div><div class="stat-label" data-i18n="winrate"></div></div>
+                    <div class="stat-card"><div id="statWinsFor1Pct" style="display:flex;align-items:center;justify-content:center;gap:6px"><span class="stat-value">—</span></div><div id="statWinsLabel" class="stat-label" data-i18n="winsFor1Pct"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statAvgDmg">—</div><div class="stat-label" data-i18n="avgDmg"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statSurvival">—</div><div class="stat-label" data-i18n="survival"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statAccuracy">—</div><div class="stat-label" data-i18n="accuracy"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statAvgFrags">—</div><div class="stat-label" data-i18n="avgFrags"></div></div>
+                    <div class="stat-card"><div class="stat-value" id="statMaxFrags">—</div><div class="stat-label" data-i18n="maxFrags"></div></div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container"><h3 data-i18n="chartBattles"></h3><canvas id="battlesChart"></canvas></div>
+                    <div class="chart-container"><h3 data-i18n="chartTypes"></h3><canvas id="tankTypesChart"></canvas></div>
+                </div>
+                <div class="charts-row">
+                    <div class="chart-container"><h3 data-i18n="chartNations"></h3><canvas id="nationsChart"></canvas></div>
+                    <div class="chart-container"><h3 data-i18n="chartTiers"></h3><canvas id="tiersChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Tanks -->
+            <div class="tab-content" id="tab-tanks">
+                <div class="tanks-section">
+                    <div class="tank-filters">
+                        <input type="text" id="tankSearch" data-i18n-placeholder="tankSearchPlaceholder" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-size:.85rem;width:160px">
+                        <select id="tierFilter"><option value="" data-i18n="allTiers"></option></select>
+                        <select id="typeFilter"><option value="" data-i18n="allTypes"></option></select>
+                        <select id="sortFilter"></select>
+                        <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
+                            <input type="checkbox" id="hideRemoved" checked> <span data-i18n="hideRemoved"></span>
+                        </label>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr>
+                                <th class="sortable" data-sort="name" data-i18n="thTank"></th><th class="sortable" data-sort="tier" data-i18n="thTier"></th><th class="sortable" data-sort="type" data-i18n="thType"></th>
+                                <th class="sortable sort-desc" data-sort="battles" data-i18n="battles"></th><th class="sortable" data-sort="winrate" data-i18n="winrate"></th><th class="sortable" data-sort="avg_dmg" data-i18n="avgDmg"></th><th class="sortable" data-sort="avg_frags" data-i18n="avgFrags"></th><th class="sortable" data-sort="max_xp" data-i18n="maxXP"></th><th class="sortable" data-sort="wins_for_1pct" data-i18n="winsFor1Pct"></th>
+                            </tr></thead>
+                            <tbody id="tankTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session -->
+            <div class="tab-content" id="tab-session">
+                <div class="session-controls" style="margin-bottom:10px">
+                    <input type="text" id="sessionName" data-i18n-placeholder="sessionNamePlaceholder" style="padding:7px 12px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none;width:180px">
+                    <button class="btn btn-sm" onclick="startSession()" data-i18n="sessionStart"></button>
+                    <button class="btn btn-secondary btn-sm" onclick="refreshAllSessions()" data-i18n="sessionRefreshAll"></button>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer;margin-left:8px">
+                        <input type="checkbox" id="sessAutoExpand"> <span data-i18n="sessAutoExpand"></span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer;margin-left:8px">
+                        <input type="checkbox" id="sessAutoRefresh"> <span data-i18n="sessAutoRefresh"></span>
+                    </label>
+                    <select id="sessAutoInterval" style="padding:4px 6px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.8rem;display:none">
+                        <option value="60">1 min</option><option value="180" selected>3 min</option><option value="300">5 min</option><option value="600">10 min</option>
+                    </select>
+                </div>
+                <div id="sessionsContainer"></div>
+                <div id="sessionEmpty" class="no-session">
+                    <p data-i18n="sessionHintMulti"></p>
+                </div>
+                <details style="margin-top:20px">
+                    <summary style="cursor:pointer;color:var(--t2);font-size:.9rem;margin-bottom:10px"><span data-i18n="sessArchive"></span></summary>
+                    <div style="margin-bottom:8px"><button class="btn btn-danger btn-sm" onclick="clearArchive()" data-i18n="sessClearArchive"></button></div>
+                    <div id="archiveContainer"></div>
+                </details>
+            </div>
+
+            <!-- Rating -->
+            <div class="tab-content" id="tab-rating">
+                <div class="tanks-section" style="margin-bottom:15px">
+                    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+                        <label style="color:var(--t2);font-size:.85rem" data-i18n="ratingMinBattles"></label>
+                        <input type="number" id="ratingMinBattles" value="20" min="1" max="500" style="width:70px;padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none">
+                        <select id="ratingTierFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
+                            <option value="" data-i18n="allTiers"></option>
+                            <option value="10">X</option><option value="9">IX</option><option value="8">VIII</option><option value="7">VII</option><option value="6">VI</option>
+                            <option value="5">V</option><option value="4">IV</option><option value="3">III</option><option value="2">II</option><option value="1">I</option>
+                        </select>
+                        <select id="ratingTypeFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
+                            <option value="" data-i18n="allTypes"></option>
+                            <option value="heavyTank" data-i18n="HT"></option>
+                            <option value="mediumTank" data-i18n="MT"></option>
+                            <option value="lightTank" data-i18n="LT"></option>
+                            <option value="AT-SPG" data-i18n="TD"></option>
+                        </select>
+                        <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
+                            <input type="checkbox" id="ratingRecent"> <span data-i18n="ratingRecent"></span>
+                        </label>
+                        <button class="btn btn-sm" onclick="displayRating()" data-i18n="sessionRefresh"></button>
+                    </div>
+                    <div id="ratingBest"></div>
+                    <div id="ratingWorst" style="margin-top:15px"></div>
+                </div>
+            </div>
+
+            <!-- Compare -->
+            <div class="tab-content" id="tab-compare">
+                <div class="tanks-section">
+                    <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;align-items:end">
+                        <div style="flex:1;min-width:150px">
+                            <label style="font-size:.8rem;color:var(--t2)" data-i18n="comparePlayer1"></label>
+                            <input type="text" id="cmpInput1" data-i18n-placeholder="searchPlaceholder" style="width:100%;padding:7px 10px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none">
+                        </div>
+                        <div style="flex:1;min-width:150px">
+                            <label style="font-size:.8rem;color:var(--t2)" data-i18n="comparePlayer2"></label>
+                            <input type="text" id="cmpInput2" data-i18n-placeholder="searchPlaceholder" style="width:100%;padding:7px 10px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none">
+                        </div>
+                        <button class="btn btn-sm" onclick="doCompare()" data-i18n="compareBtn"></button>
+                    </div>
+                    <div id="compareResult"></div>
+                    <div style="margin-top:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <label style="font-size:.85rem;color:var(--t2)" data-i18n="compareTank"></label>
+                        <input type="text" id="cmpTankInput" data-i18n-placeholder="compareTankPlaceholder" style="padding:7px 10px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none;width:180px">
+                        <button class="btn btn-sm" onclick="doCompareTank()" data-i18n="compareBtn"></button>
+                    </div>
+                    <div id="compareTankResult" style="margin-top:10px"></div>
+                </div>
+            </div>
+
+            <!-- Help -->
+            <div class="tab-content" id="tab-help">
+                <div class="tanks-section" style="line-height:1.7">
+                    <h3 style="color:var(--acc);margin-bottom:15px;font-size:1.2rem" data-i18n="helpTitle"></h3>
+                    <div id="helpContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ==================== i18n ====================
+const LANG = {
+    uk: {
+        subtitle:"World of Tanks Blitz — Статистика гравця",
+        searchPlaceholder:"Введіть нікнейм...",searchBtn:"Пошук",
+        savedProfiles:"Збережені профілі:",noProfiles:"Немає збережених профілів",
+        tabOverview:"Загальна",tabTanks:"Танки",tabSession:"Сесія",tabHelp:"Довідка",
+        battles:"Бої",winrate:"Вінрейт",avgDmg:"Сер. шкода",avgFrags:"Сер. фраги",
+        survival:"Виживання",accuracy:"Влучність",maxXP:"Макс. досвід",maxFrags:"Макс. фраги",
+        winsFor1Pct:"до +1%",winsToWhole:"до цілого",
+        chartBattles:"Розподіл боїв",chartTypes:"Типи танків",chartNations:"Нації",chartTiers:"Рівні",
+                tabRating:"Рейтинг",ratingMinBattles:"Мін. боїв:",ratingBest:"Найкращі танки",ratingWorst:"Найгірші танки",
+        ratingScore:"Рейтинг",ratingEmpty:"Спочатку завантажте статистику гравця",ratingRecent:"За останній час",
+        compareTank:"Порівняти танк:",compareTankPlaceholder:"Назва танка...",compareNoTank:"Танк не знайдений у обох гравців",
+        tabCompare:"Порівняння",comparePlayer1:"Гравець 1",comparePlayer2:"Гравець 2",compareBtn:"Порівняти",
+        compareStat:"Показник",
+        wins:"Перемоги",losses:"Поразки",draws:"Нічиї",
+        tankSearchPlaceholder:"Пошук танка...",allTiers:"Всі рівні",allTypes:"Всі типи",
+        sortBattles:"За боями",sortWR:"За вінрейтом",sortDmg:"За сер. шкодою",
+        hideRemoved:"Сховати невідомі танки",
+        thTank:"Танк",thTier:"Рівень",thType:"Тип",
+        sessionHintMulti:"Створіть сесію перед грою. Можна мати декілька сесій одночасно.",
+        sessionStart:"Нова сесія",sessionRefresh:"Оновити",sessionRefreshAll:"Оновити всі",sessionStop:"Видалити",sessReset:"Скинути",sessAutoExpand:"Розгорнути танки",sessAutoRefresh:"Автооновлення",
+        sessionStarted:"Розпочата:",sessionNamePlaceholder:"Назва сесії...",sessionDefault:"Сесія",
+        sessArchive:"Архів сесій",sessArchiveEmpty:"Архів порожній",sessArchiveBtn:"В архів",sessClearArchive:"Очистити архів",sessRestoreBtn:"Повернути",sessDeleteBtn:"Видалити",
+        sessBattles:"Боїв",sessWR:"Вінрейт",sessAvgDmg:"Сер. шкода",sessAvgFrags:"Сер. фраги",
+        sessTanks:"Танки за сесію",
+        noResults:"Гравця не знайдено",searchError:"Помилка пошуку",
+        loading:"Завантаження",lastBattle:"Останній бій:",
+        noBattlesYet:"Поки що немає боїв. Пограйте та натисніть «Оновити».",
+        confirmStop:"Завершити сесію?",errorData:"Помилка отримання даних",findFirst:"Спочатку знайдіть гравця",
+        HT:"ВТ",MT:"СТ",LT:"ЛТ",TD:"ПТ-САУ",
+        save:"Зберегти",remove:"Видалити",
+        exportBtn:"Експорт",importBtn:"Імпорт",importSuccess:"Дані імпортовано!",importError:"Помилка імпорту",
+        helpTitle:"Як користуватися CL-Stats",
+        helpContent:`<h4>🔍 Пошук гравця</h4>
+<p>Введіть нікнейм у поле пошуку та натисніть «Пошук». Оберіть гравця зі списку результатів. Нікнейм зберігається автоматично — при наступному відкритті статистика завантажиться сама.</p>
+
+<h4>⭐ Збережені профілі</h4>
+<p>Натисніть зірочку (★) поруч з ніком у результатах пошуку, щоб зберегти профіль. Збережені профілі відображаються під пошуком — один клік і статистика завантажується. Щоб видалити — натисніть × на профілі.</p>
+
+<h4>📊 Вкладка «Загальна»</h4>
+<p>Загальна статистика акаунту: бої, вінрейт, середня шкода, фраги, виживання, влучність та макс. фраги. Поле «Боїв до» показує два значення: скільки перемог підряд потрібно до наступного цілого відсотка та до +1% вінрейту. Графіки: розподіл боїв, типи танків, нації та рівні.</p>
+
+<h4>🔫 Вкладка «Танки»</h4>
+<p>Детальна статистика по кожному танку. Фільтри за рівнем, типом та пошук за назвою. Сортування — натисніть на заголовок стовпця (▲/▼). Чекбокс «Сховати невідомі танки» приховує танки, яких немає в енциклопедії. Поле «Боїв до +1%» показує скільки перемог потрібно для підвищення вінрейту на цьому танку.</p>
+
+<h4>🎮 Вкладка «Сесія»</h4>
+<p>Відстежуйте результати за ігрову сесію:</p>
+<ol>
+<li>Натисніть <b>«Нова сесія»</b> перед початком гри (можна вказати назву)</li>
+<li>Зіграйте кілька боїв</li>
+<li>Натисніть <b>«Оновити всі»</b> — побачите статистику за цю сесію</li>
+</ol>
+<p>Можна мати декілька сесій одночасно. Сесії автоматично групуються по акаунтах — порядок груп можна змінювати кнопками ▲/▼. Перетягуйте сесії за іконку ☰ щоб змінити порядок всередині групи. Кнопки керування:</p>
+<ol>
+<li><b>«Скинути»</b> — почати сесію заново (зберігає назву, скидає дані)</li>
+<li><b>«В архів»</b> — зберегти сесію в архів для історії</li>
+<li><b>«Видалити»</b> — видалити сесію назавжди</li>
+</ol>
+<p><b>Автооновлення:</b> увімкніть чекбокс «Автооновлення» — сесії оновлюватимуться автоматично по таймеру (1/3/5/10 хв) та при поверненні на вкладку браузера після гри.</p>
+<p>Чекбокс «Розгорнути танки» тримає таблиці танків відкритими при оновленні.</p>
+
+<h4>📦 Архів сесій</h4>
+<p>Архів зберігає завершені сесії. Кожну архівну сесію можна повернути назад або видалити. Архів також використовується для розрахунку рейтингу «За останній час».</p>
+
+<h4>🏆 Вкладка «Рейтинг»</h4>
+<p>Рейтинг ефективності танків на основі формули: вінрейт, середня шкода, фраги та виживання. Фільтри за рівнем та типом. Чекбокс «За останній час» рахує рейтинг тільки по боях із сесій та архіву — корисно для оцінки поточної форми.</p>
+
+<h4>⚔️ Вкладка «Порівняння»</h4>
+<p>Порівняння двох гравців: введіть ніки та натисніть «Порівняти». Також можна порівняти конкретний танк — введіть назву у поле нижче. Кращий показник підсвічується зеленим.</p>
+
+<h4>💾 Експорт / Імпорт</h4>
+<p>Кнопка «Експорт» зберігає всі ваші дані (профілі, сесії, налаштування) у JSON-файл. «Імпорт» — завантажує дані з файлу. Це дозволяє перенести дані на інший пристрій.</p>
+
+<h4>🎨 Тема та мова</h4>
+<p>Кнопка ☾/☀ перемикає темну/світлу тему. Список мов — UA, RU, EN, UZ. Всі налаштування зберігаються автоматично. Активна вкладка також запам'ятовується.</p>
+
+<h4>📱 Встановлення як додаток</h4>
+<p>На телефоні: відкрийте сторінку → меню браузера → «Додати на головний екран». На ПК (Chrome): меню → «Встановити CL-Stats». Додаток працюватиме у власному вікні без адресного рядка.</p>
+
+<hr style="border-color:var(--brd);margin:15px 0">
+<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.0 — by Clark</p>`
+    },
+    ru: {
+        subtitle:"World of Tanks Blitz — Статистика игрока",
+        searchPlaceholder:"Введите никнейм...",searchBtn:"Поиск",
+        savedProfiles:"Сохранённые профили:",noProfiles:"Нет сохранённых профилей",
+        tabOverview:"Общая",tabTanks:"Танки",tabSession:"Сессия",tabHelp:"Справка",
+        battles:"Бои",winrate:"Винрейт",avgDmg:"Ср. урон",avgFrags:"Ср. фраги",
+        survival:"Выживание",accuracy:"Точность",maxXP:"Макс. опыт",maxFrags:"Макс. фраги",
+        winsFor1Pct:"до +1%",winsToWhole:"до целого",
+        chartBattles:"Распределение боёв",chartTypes:"Типы танков",chartNations:"Нации",chartTiers:"Уровни",
+                tabRating:"Рейтинг",ratingMinBattles:"Мин. боёв:",ratingBest:"Лучшие танки",ratingWorst:"Худшие танки",
+        ratingScore:"Рейтинг",ratingEmpty:"Сначала загрузите статистику игрока",ratingRecent:"За последнее время",
+        compareTank:"Сравнить танк:",compareTankPlaceholder:"Название танка...",compareNoTank:"Танк не найден у обоих игроков",
+        tabCompare:"Сравнение",comparePlayer1:"Игрок 1",comparePlayer2:"Игрок 2",compareBtn:"Сравнить",
+        compareStat:"Показатель",
+        wins:"Победы",losses:"Поражения",draws:"Ничьи",
+        tankSearchPlaceholder:"Поиск танка...",allTiers:"Все уровни",allTypes:"Все типы",
+        sortBattles:"По боям",sortWR:"По винрейту",sortDmg:"По ср. урону",
+        hideRemoved:"Скрыть неизвестные танки",
+        thTank:"Танк",thTier:"Уровень",thType:"Тип",
+        sessionHintMulti:"Создайте сессию перед игрой. Можно иметь несколько сессий одновременно.",
+        sessionStart:"Новая сессия",sessionRefresh:"Обновить",sessionRefreshAll:"Обновить все",sessionStop:"Удалить",sessReset:"Сбросить",sessAutoExpand:"Развернуть танки",sessAutoRefresh:"Автообновление",
+        sessionStarted:"Начата:",sessionNamePlaceholder:"Название сессии...",sessionDefault:"Сессия",
+        sessArchive:"Архив сессий",sessArchiveEmpty:"Архив пуст",sessArchiveBtn:"В архив",sessClearArchive:"Очистить архив",sessRestoreBtn:"Восстановить",sessDeleteBtn:"Удалить",
+        sessBattles:"Боёв",sessWR:"Винрейт",sessAvgDmg:"Ср. урон",sessAvgFrags:"Ср. фраги",
+        sessTanks:"Танки за сессию",
+        noResults:"Игрок не найден",searchError:"Ошибка поиска",
+        loading:"Загрузка",lastBattle:"Последний бой:",
+        noBattlesYet:"Пока нет боёв. Поиграйте и нажмите «Обновить».",
+        confirmStop:"Завершить сессию?",errorData:"Ошибка получения данных",findFirst:"Сначала найдите игрока",
+        HT:"ТТ",MT:"СТ",LT:"ЛТ",TD:"ПТ-САУ",
+        save:"Сохранить",remove:"Удалить",
+        exportBtn:"Экспорт",importBtn:"Импорт",importSuccess:"Данные импортированы!",importError:"Ошибка импорта",
+        helpTitle:"Как пользоваться CL-Stats",
+        helpContent:`<h4>🔍 Поиск игрока</h4>
+<p>Введите никнейм в поле поиска и нажмите «Поиск». Выберите игрока из списка. Никнейм сохраняется автоматически — при следующем открытии статистика загрузится сама.</p>
+
+<h4>⭐ Сохранённые профили</h4>
+<p>Нажмите звёздочку (★) рядом с ником в результатах поиска, чтобы сохранить профиль. Сохранённые профили отображаются под поиском — один клик и статистика загружается. Для удаления нажмите × на профиле.</p>
+
+<h4>📊 Вкладка «Общая»</h4>
+<p>Показывает общую статистику аккаунта: бои, винрейт, средний урон, фраги, выживание, точность, макс. опыт и макс. фрагов. Графики показывают распределение побед/поражений и типы танков.</p>
+
+<h4>🔫 Вкладка «Танки»</h4>
+<p>Таблица с детальной статистикой по каждому танку. Фильтры по уровню и типу. Сортировка — клик по заголовку столбца (▲/▼). Чекбокс «Скрыть удалённые» прячет танки, которых больше нет в игре.</p>
+
+<h4>🎮 Вкладка «Сессия»</h4>
+<p>Позволяет отслеживать результаты за игровую сессию:</p>
+<ol>
+<li>Нажмите <b>«Новая сессия»</b> перед игрой (можно указать название)</li>
+<li>Сыграйте несколько боёв</li>
+<li>Нажмите <b>«Обновить»</b> — увидите статистику именно за эту сессию</li>
+</ol>
+<p>Можно иметь несколько сессий одновременно. Перетаскивайте сессии за иконку ☰ для изменения порядка.</p>
+
+<h4>💾 Экспорт / Импорт</h4>
+<p>Кнопка «Экспорт» сохраняет все данные (профили, сессии, настройки) в JSON-файл. «Импорт» — загружает данные из файла для переноса на другое устройство.</p>
+
+<h4>🎨 Тема и язык</h4>
+<p>Кнопка ☾/☀ переключает тёмную/светлую тему. Список языков — UA, RU, EN, UZ. Все настройки сохраняются автоматически.</p>
+
+<h4>📱 Установка как приложение</h4>
+<p>На телефоне: откройте страницу → меню браузера → «Добавить на главный экран». На ПК (Chrome): меню → «Установить CL-Stats».</p>
+
+<hr style="border-color:var(--brd);margin:15px 0">
+<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+    },
+    en: {
+        subtitle:"World of Tanks Blitz — Player Statistics",
+        searchPlaceholder:"Enter nickname...",searchBtn:"Search",
+        savedProfiles:"Saved profiles:",noProfiles:"No saved profiles",
+        tabOverview:"Overview",tabTanks:"Tanks",tabSession:"Session",tabHelp:"Help",
+        battles:"Battles",winrate:"Win Rate",avgDmg:"Avg Damage",avgFrags:"Avg Frags",
+        survival:"Survival",accuracy:"Accuracy",maxXP:"Max XP",maxFrags:"Max Frags",
+        winsFor1Pct:"to +1%",winsToWhole:"to whole",
+        chartBattles:"Battle Distribution",chartTypes:"Tank Types",chartNations:"Nations",chartTiers:"Tiers",
+                tabRating:"Rating",ratingMinBattles:"Min battles:",ratingBest:"Best Tanks",ratingWorst:"Worst Tanks",
+        ratingScore:"Rating",ratingEmpty:"Load player stats first",ratingRecent:"Recent only",
+        compareTank:"Compare tank:",compareTankPlaceholder:"Tank name...",compareNoTank:"Tank not found for both players",
+        tabCompare:"Compare",comparePlayer1:"Player 1",comparePlayer2:"Player 2",compareBtn:"Compare",
+        compareStat:"Stat",
+        wins:"Wins",losses:"Losses",draws:"Draws",
+        tankSearchPlaceholder:"Search tank...",allTiers:"All Tiers",allTypes:"All Types",
+        sortBattles:"By Battles",sortWR:"By Win Rate",sortDmg:"By Avg Damage",
+        hideRemoved:"Hide unknown tanks",
+        thTank:"Tank",thTier:"Tier",thType:"Type",
+        sessionHintMulti:"Create a session before playing. You can have multiple sessions at once.",
+        sessionStart:"New Session",sessionRefresh:"Refresh",sessionRefreshAll:"Refresh All",sessionStop:"Delete",sessReset:"Reset",sessAutoExpand:"Expand tanks",sessAutoRefresh:"Auto-refresh",
+        sessionStarted:"Started:",sessionNamePlaceholder:"Session name...",sessionDefault:"Session",
+        sessArchive:"Session Archive",sessArchiveEmpty:"Archive is empty",sessArchiveBtn:"Archive",sessClearArchive:"Clear Archive",sessRestoreBtn:"Restore",sessDeleteBtn:"Delete",
+        sessBattles:"Battles",sessWR:"Win Rate",sessAvgDmg:"Avg Damage",sessAvgFrags:"Avg Frags",
+        sessTanks:"Session Tanks",
+        noResults:"Player not found",searchError:"Search error",
+        loading:"Loading",lastBattle:"Last battle:",
+        noBattlesYet:"No battles yet. Play and press \"Refresh\".",
+        confirmStop:"End session?",errorData:"Data fetch error",findFirst:"Find a player first",
+        HT:"HT",MT:"MT",LT:"LT",TD:"TD",
+        save:"Save",remove:"Remove",
+        exportBtn:"Export",importBtn:"Import",importSuccess:"Data imported!",importError:"Import error",
+        helpTitle:"How to use CL-Stats",
+        helpContent:`<h4>🔍 Player Search</h4>
+<p>Enter a nickname in the search field and press "Search". Select a player from the results. The nickname is saved automatically — next time the stats will load on its own.</p>
+
+<h4>⭐ Saved Profiles</h4>
+<p>Click the star (★) next to a nickname in search results to save the profile. Saved profiles appear below the search bar — one click to load stats. Click × to remove.</p>
+
+<h4>📊 Overview Tab</h4>
+<p>Shows overall account stats: battles, win rate, avg damage, frags, survival, accuracy, max XP and max frags. Charts show win/loss distribution and tank types.</p>
+
+<h4>🔫 Tanks Tab</h4>
+<p>Detailed per-tank statistics table. Filter by tier and type. Sort by clicking column headers (▲/▼). "Hide removed" checkbox hides tanks no longer in the game.</p>
+
+<h4>🎮 Session Tab</h4>
+<p>Track results for a gaming session:</p>
+<ol>
+<li>Press <b>"New Session"</b> before playing (you can set a name)</li>
+<li>Play some battles</li>
+<li>Press <b>"Refresh"</b> — see stats for that session only</li>
+</ol>
+<p>You can have multiple sessions at once. Drag sessions by the ☰ icon to reorder.</p>
+
+<h4>💾 Export / Import</h4>
+<p>"Export" saves all your data (profiles, sessions, settings) to a JSON file. "Import" loads data from a file to transfer between devices.</p>
+
+<h4>🎨 Theme & Language</h4>
+<p>The ☾/☀ button toggles dark/light theme. Language selector: UA, RU, EN, UZ. All settings are saved automatically.</p>
+
+<h4>📱 Install as App</h4>
+<p>On phone: open the page → browser menu → "Add to Home Screen". On PC (Chrome): menu → "Install CL-Stats".</p>
+
+<hr style="border-color:var(--brd);margin:15px 0">
+<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+    },
+    uz: {
+        subtitle:"World of Tanks Blitz — O'yinchi statistikasi",
+        searchPlaceholder:"Nikneym kiriting...",searchBtn:"Qidirish",
+        savedProfiles:"Saqlangan profillar:",noProfiles:"Saqlangan profillar yo'q",
+        tabOverview:"Umumiy",tabTanks:"Tanklar",tabSession:"Sessiya",tabHelp:"Yordam",
+        battles:"Janglar",winrate:"G'alaba %",avgDmg:"O'rt. zarar",avgFrags:"O'rt. fraglar",
+        survival:"Omon qolish",accuracy:"Aniqlik",maxXP:"Maks. tajriba",maxFrags:"Maks. fraglar",
+        winsFor1Pct:"+1% uchun",winsToWhole:"butun uchun",
+        chartBattles:"Janglar taqsimoti",chartTypes:"Tank turlari",chartNations:"Millatlar",chartTiers:"Darajalar",
+                tabRating:"Reyting",ratingMinBattles:"Min janglar:",ratingBest:"Eng yaxshi tanklar",ratingWorst:"Eng yomon tanklar",
+        ratingScore:"Reyting",ratingEmpty:"Avval o'yinchi statistikasini yuklang",ratingRecent:"Oxirgi vaqtda",
+        compareTank:"Tankni taqqoslash:",compareTankPlaceholder:"Tank nomi...",compareNoTank:"Tank ikkala o'yinchida topilmadi",
+        tabCompare:"Taqqoslash",comparePlayer1:"1-o'yinchi",comparePlayer2:"2-o'yinchi",compareBtn:"Taqqoslash",
+        compareStat:"Ko'rsatkich",
+        wins:"G'alabalar",losses:"Mag'lubiyatlar",draws:"Duranglar",
+        tankSearchPlaceholder:"Tank qidirish...",allTiers:"Barcha darajalar",allTypes:"Barcha turlar",
+        sortBattles:"Janglarga ko'ra",sortWR:"G'alaba % bo'yicha",sortDmg:"O'rt. zararga ko'ra",
+        hideRemoved:"Noma'lum tanklarni yashirish",
+        thTank:"Tank",thTier:"Daraja",thType:"Tur",
+        sessionHintMulti:"O'yin oldidan sessiya yarating. Bir vaqtda bir nechta sessiya bo'lishi mumkin.",
+        sessionStart:"Yangi sessiya",sessionRefresh:"Yangilash",sessionRefreshAll:"Barchasini yangilash",sessionStop:"O'chirish",sessReset:"Qayta boshlash",sessAutoExpand:"Tanklarni ochish",sessAutoRefresh:"Avto-yangilash",
+        sessionStarted:"Boshlandi:",sessionNamePlaceholder:"Sessiya nomi...",sessionDefault:"Sessiya",
+        sessArchive:"Sessiya arxivi",sessArchiveEmpty:"Arxiv bo'sh",sessArchiveBtn:"Arxivlash",sessClearArchive:"Arxivni tozalash",sessRestoreBtn:"Qaytarish",sessDeleteBtn:"O'chirish",
+        sessBattles:"Janglar",sessWR:"G'alaba %",sessAvgDmg:"O'rt. zarar",sessAvgFrags:"O'rt. fraglar",
+        sessTanks:"Sessiya tanklari",
+        noResults:"O'yinchi topilmadi",searchError:"Qidirish xatosi",
+        loading:"Yuklanmoqda",lastBattle:"Oxirgi jang:",
+        noBattlesYet:"Hali janglar yo'q. O'ynang va «Yangilash» bosing.",
+        confirmStop:"Sessiyani tugatish?",errorData:"Ma'lumot olishda xato",findFirst:"Avval o'yinchini toping",
+        HT:"OT",MT:"O'T",LT:"YT",TD:"PT-SAU",
+        save:"Saqlash",remove:"O'chirish",
+        exportBtn:"Eksport",importBtn:"Import",importSuccess:"Ma'lumotlar import qilindi!",importError:"Import xatosi",
+        helpTitle:"CL-Stats dan qanday foydalanish",
+        helpContent:`<h4>🔍 O'yinchini qidirish</h4>
+<p>Qidiruv maydoniga nikneym kiriting va "Qidirish" tugmasini bosing. Ro'yxatdan o'yinchini tanlang. Nikneym avtomatik saqlanadi — keyingi safar statistika o'zi yuklanadi.</p>
+
+<h4>⭐ Saqlangan profillar</h4>
+<p>Qidiruv natijalarida nikneym yonidagi yulduzchani (★) bosing. Saqlangan profillar qidiruv ostida ko'rinadi — bir bosish bilan statistika yuklanadi. O'chirish uchun × bosing.</p>
+
+<h4>📊 "Umumiy" bo'limi</h4>
+<p>Akkauntning umumiy statistikasini ko'rsatadi: janglar, g'alaba %, o'rtacha zarar, fraglar, omon qolish, aniqlik, maks. tajriba va maks. fraglar.</p>
+
+<h4>🔫 "Tanklar" bo'limi</h4>
+<p>Har bir tank bo'yicha batafsil statistika jadvali. Daraja va turga ko'ra filtr. Saralash — ustun sarlavhasini bosing (▲/▼).</p>
+
+<h4>🎮 "Sessiya" bo'limi</h4>
+<p>O'yin sessiyasi natijalarini kuzatish:</p>
+<ol>
+<li>O'yin oldidan <b>"Yangi sessiya"</b> bosing</li>
+<li>Bir necha jang o'ynang</li>
+<li><b>"Yangilash"</b> bosing — faqat shu sessiya statistikasini ko'ring</li>
+</ol>
+<p>Bir vaqtda bir nechta sessiya bo'lishi mumkin. ☰ belgisi orqali tartibni o'zgartiring.</p>
+
+<h4>💾 Eksport / Import</h4>
+<p>"Eksport" barcha ma'lumotlarni JSON faylga saqlaydi. "Import" boshqa qurilmaga o'tkazish uchun fayldan yuklaydi.</p>
+
+<h4>🎨 Mavzu va til</h4>
+<p>☾/☀ tugmasi qorong'i/yorug' mavzuni almashtiradi. Tillar: UA, RU, EN, UZ. Barcha sozlamalar avtomatik saqlanadi.</p>
+
+<h4>📱 Ilova sifatida o'rnatish</h4>
+<p>Telefonda: sahifani oching → brauzer menyusi → "Bosh ekranga qo'shish". Kompyuterda (Chrome): menyu → "CL-Stats o'rnatish".</p>
+
+<hr style="border-color:var(--brd);margin:15px 0">
+<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+    }
+};
+
+let currentLang = "uk";
+
+function t(key) { return (LANG[currentLang] || LANG.uk)[key] || key; }
+
+function applyI18n() {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    // Dynamic selects
+    const tf = document.getElementById("tierFilter");
+    if (tf && tf.options[0]) tf.options[0].text = t("allTiers");
+    const tyf = document.getElementById("typeFilter");
+    if (tyf) {
+        tyf.innerHTML = `<option value="">${t("allTypes")}</option>
+            <option value="heavyTank">${t("HT")}</option>
+            <option value="mediumTank">${t("MT")}</option>
+            <option value="lightTank">${t("LT")}</option>
+            <option value="AT-SPG">${t("TD")}</option>`;
+    }
+    const sf = document.getElementById("sortFilter");
+    if (sf) {
+        const val = sf.value || "battles";
+        sf.innerHTML = `<option value="battles">${t("sortBattles")}</option>
+            <option value="winrate">${t("sortWR")}</option>
+            <option value="avg_dmg">${t("sortDmg")}</option>`;
+        sf.value = val;
+    }
+    renderProfiles();
+    const hc = document.getElementById("helpContent");
+    if (hc) hc.innerHTML = t("helpContent");
+}
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem("clstats_lang", lang);
+    document.getElementById("langSelect").value = lang;
+    applyI18n();
+}
+
+// ==================== CONFIG ====================
+const API_ID = "8f076ce8e0858be487598628dd5c0ffd";
+const BASE = "https://api.wotblitz.eu/wotb";
+
+const $ = id => document.getElementById(id);
+let allTankData = [];
+let battlesChart = null, tankTypesChart = null, nationsChart = null, tiersChart = null;
+let tankInfoCache = {};
+let currentAccountId = null;
+
+// ==================== THEME ====================
+function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    $("themeIcon").textContent = theme === "dark" ? "\u263E" : "\u2600";
+    localStorage.setItem("clstats_theme", theme);
+}
+
+$("themeToggle").addEventListener("click", () => {
+    const cur = localStorage.getItem("clstats_theme") || "dark";
+    applyTheme(cur === "dark" ? "light" : "dark");
+});
+
+// ==================== TABS ====================
+function switchTab(tab) {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add("active");
+    $("tab-" + tab).classList.add("active");
+    localStorage.setItem("clstats_tab", tab);
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+});
+
+const savedTab = localStorage.getItem("clstats_tab");
+if (savedTab && $("tab-" + savedTab)) switchTab(savedTab);
+
+// ==================== PROFILES ====================
+function getProfiles() {
+    return JSON.parse(localStorage.getItem("clstats_profiles") || "[]");
+}
+
+function saveProfile(id, nick) {
+    let profiles = getProfiles();
+    if (profiles.some(p => p.id === id)) return;
+    profiles.push({ id, nick });
+    localStorage.setItem("clstats_profiles", JSON.stringify(profiles));
+    renderProfiles();
+}
+
+function removeProfile(id) {
+    let profiles = getProfiles().filter(p => p.id !== id);
+    localStorage.setItem("clstats_profiles", JSON.stringify(profiles));
+    renderProfiles();
+}
+
+function renderProfiles() {
+    const list = $("profilesList");
+    const profiles = getProfiles();
+    if (profiles.length === 0) {
+        list.innerHTML = `<span style="color:var(--t2);font-size:.85rem">${t("noProfiles")}</span>`;
+        return;
+    }
+    list.innerHTML = profiles.map(p => `
+        <div class="profile-chip" data-id="${p.id}" data-nick="${p.nick}">
+            <span class="nick" style="cursor:pointer">${p.nick}</span>
+            <span class="remove" title="${t("remove")}">&times;</span>
+        </div>
+    `).join("");
+    list.querySelectorAll(".profile-chip .nick").forEach(el => {
+        el.addEventListener("click", () => {
+            const chip = el.closest(".profile-chip");
+            loadPlayer(+chip.dataset.id, chip.dataset.nick);
+        });
+    });
+    list.querySelectorAll(".profile-chip .remove").forEach(el => {
+        el.addEventListener("click", e => {
+            e.stopPropagation();
+            removeProfile(+el.closest(".profile-chip").dataset.id);
+        });
+    });
+}
+
+// ==================== INIT ====================
+window.addEventListener("DOMContentLoaded", () => {
+    applyTheme(localStorage.getItem("clstats_theme") || "dark");
+    setLang(localStorage.getItem("clstats_lang") || "uk");
+
+    // Tier filter options
+    const tf = $("tierFilter");
+    const tiers = [10,9,8,7,6,5,4,3,2,1];
+    const roman = {1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"};
+    tiers.forEach(t => { const o = document.createElement("option"); o.value = t; o.textContent = roman[t]; tf.appendChild(o); });
+
+    const saved = localStorage.getItem("clstats_player");
+    if (saved) {
+        const { id, nick } = JSON.parse(saved);
+        $("searchInput").value = nick;
+        loadPlayer(id, nick);
+    }
+
+    // Migrate old single session to multi format
+    const oldSess = localStorage.getItem("clstats_session");
+    if (oldSess) {
+        const old = JSON.parse(oldSess);
+        const sessions = getSessions();
+        sessions.push({ name: t("sessionDefault"), startTime: old.startTime, accountId: old.accountId, tanks: old.tanks, diffs: [] });
+        saveSessions(sessions);
+        localStorage.removeItem("clstats_session");
+    }
+    renderSessions();
+    setupAutoRefresh();
+
+    renderProfiles();
+});
+
+$("langSelect").addEventListener("change", e => setLang(e.target.value));
+
+// ==================== API ====================
+async function api(endpoint, params = {}) {
+    params.application_id = API_ID;
+    const qs = new URLSearchParams(params).toString();
+    const resp = await fetch(`${BASE}/${endpoint}/?${qs}`);
+    return resp.json();
+}
+
+const TANK_NAMES = {
+    28689: { name: "Rhm. Pzw.", tier: 10, type: "lightTank", nation: "germany" },
+    7169:  { name: "IS-7", tier: 10, type: "heavyTank", nation: "ussr" },
+    17793: { name: "Rinoceronte", tier: 10, type: "heavyTank", nation: "italy" },
+    18049: { name: "Lion", tier: 10, type: "mediumTank", nation: "italy" },
+    21057: { name: "Projet Murat", tier: 10, type: "mediumTank", nation: "france" },
+    12929: { name: "TNH T Vz. 51", tier: 9, type: "heavyTank", nation: "czech" },
+    13185: { name: "Vz. 55", tier: 10, type: "heavyTank", nation: "czech" },
+    19585: { name: "NC 70 Błyskawica", tier: 10, type: "AT-SPG", nation: "european" },
+    14977: { name: "CS-63", tier: 10, type: "mediumTank", nation: "european" },
+    19825: { name: "AC Atlas", tier: 10, type: "heavyTank", nation: "other" },
+    18241: { name: "B-C Bourrasque", tier: 8, type: "mediumTank", nation: "france" },
+    13697: { name: "TNH 105/1000", tier: 8, type: "heavyTank", nation: "czech" },
+    13953: { name: "Vz. 44-1", tier: 7, type: "heavyTank", nation: "czech" },
+    11825: { name: "BZ-75", tier: 10, type: "heavyTank", nation: "china" },
+    14209: { name: "Škoda P-JS", tier: 6, type: "mediumTank", nation: "czech" },
+    28705: { name: "XM66F", tier: 10, type: "AT-SPG", nation: "usa" },
+    3089:  { name: "L.Tr.", tier: 1, type: "lightTank", nation: "germany" },
+    14193: { name: "Silencer", tier: 7, type: "mediumTank", nation: "usa" },
+    9777:  { name: "Progetto C50 mod. 66", tier: 9, type: "mediumTank", nation: "italy" },
+    12849: { name: "116-F3", tier: 10, type: "heavyTank", nation: "china" },
+    17281: { name: "WZ-114", tier: 9, type: "heavyTank", nation: "china" },
+    545:   { name: "T1", tier: 1, type: "lightTank", nation: "usa" },
+    81:    { name: "Medium I", tier: 1, type: "mediumTank", nation: "uk" },
+    20817: { name: "Explorer", tier: 6, type: "lightTank", nation: "uk" },
+    26113: { name: "Object 452K", tier: 9, type: "heavyTank", nation: "ussr" },
+    27409: { name: "Projekt Kpz. 07P(E)", tier: 9, type: "heavyTank", nation: "germany" },
+    25857: { name: "Obj. 777 II", tier: 10, type: "heavyTank", nation: "ussr" },
+    19057: { name: "Destiny", tier: 9, type: "heavyTank", nation: "usa" },
+    17265: { name: "Souleater", tier: 8, type: "heavyTank", nation: "germany" },
+    14721: { name: "Strv 81", tier: 8, type: "mediumTank", nation: "european" },
+    11569: { name: "BZ-58-2", tier: 9, type: "heavyTank", nation: "china" },
+    11057: { name: "114 SP2", tier: 10, type: "heavyTank", nation: "china" },
+    17025: { name: "Progetto CC55 mod. 54", tier: 8, type: "mediumTank", nation: "italy" },
+    64081: { name: "Mk I* Heavy Tank", tier: 1, type: "heavyTank", nation: "uk" },
+    10289: { name: "WZ-132-1", tier: 10, type: "lightTank", nation: "china" },
+    7521:  { name: "Type 5 Ka-Ri", tier: 8, type: "AT-SPG", nation: "japan" },
+    12673: { name: "Tornvagn", tier: 9, type: "heavyTank", nation: "european" },
+    5425:  { name: "WZ-113", tier: 10, type: "heavyTank", nation: "china" },
+    24401: { name: "Vickers MBT", tier: 8, type: "mediumTank", nation: "uk" },
+    18801: { name: "mausТank", tier: 9, type: "heavyTank", nation: "germany" }
+};
+
+async function getTankInfo() {
+    if (Object.keys(tankInfoCache).length > 0) return tankInfoCache;
+    const data = await api("encyclopedia/vehicles", { fields: "name,tier,type,nation,is_premium,images.preview" });
+    if (data.status === "ok" && data.data) tankInfoCache = data.data;
+    for (const [id, info] of Object.entries(TANK_NAMES)) {
+        if (!tankInfoCache[id]) tankInfoCache[id] = info;
+    }
+    return tankInfoCache;
+}
+
+// ==================== SEARCH ====================
+$("searchBtn").addEventListener("click", doSearch);
+$("searchInput").addEventListener("keydown", e => { if (e.key === "Enter") doSearch(); });
+document.addEventListener("click", e => { if (!e.target.closest(".search-box")) $("searchResults").classList.add("hidden"); });
+
+async function doSearch() {
+    const query = $("searchInput").value.trim();
+    if (!query) return;
+
+    const sr = $("searchResults");
+    sr.innerHTML = `<div class="loading">${t("loading")}</div>`;
+    sr.classList.remove("hidden");
+
+    try {
+        const data = await api("account/list", { search: query, type: "startswith", limit: 10 });
+        if (data.status === "ok" && data.data && data.data.length > 0) {
+            const profiles = getProfiles();
+            sr.innerHTML = data.data.map(p => {
+                const isSaved = profiles.some(pr => pr.id === p.account_id);
+                return `<div class="result-item" data-id="${p.account_id}" data-nick="${p.nickname}">
+                    <div><span class="nickname">${p.nickname}</span><span class="account-id">ID: ${p.account_id}</span></div>
+                    <span class="save-icon ${isSaved ? 'saved' : ''}" title="${t("save")}">&#9733;</span>
+                </div>`;
+            }).join("");
+            sr.querySelectorAll(".result-item").forEach(el => {
+                el.querySelector(".nickname").parentElement.addEventListener("click", () => loadPlayer(+el.dataset.id, el.dataset.nick));
+                el.querySelector(".save-icon").addEventListener("click", e => {
+                    e.stopPropagation();
+                    const icon = e.target;
+                    if (icon.classList.contains("saved")) {
+                        removeProfile(+el.dataset.id);
+                        icon.classList.remove("saved");
+                    } else {
+                        saveProfile(+el.dataset.id, el.dataset.nick);
+                        icon.classList.add("saved");
+                    }
+                });
+            });
+        } else {
+            sr.innerHTML = `<div style="padding:12px 16px;color:var(--t2)">${t("noResults")}</div>`;
+        }
+    } catch (err) {
+        sr.innerHTML = `<div style="padding:12px 16px;color:#e74c3c">${t("searchError")}</div>`;
+    }
+}
+
+// ==================== LOAD PLAYER ====================
+async function loadPlayer(accountId, nickname) {
+    $("searchResults").classList.add("hidden");
+    $("searchInput").value = nickname;
+    $("playerSection").classList.remove("hidden");
+    currentAccountId = accountId;
+    localStorage.setItem("clstats_player", JSON.stringify({ id: accountId, nick: nickname }));
+
+    $("playerName").textContent = nickname;
+    $("lastBattle").textContent = t("loading") + "...";
+    resetStats();
+
+    try {
+        const [playerData, tanksData, tankInfo] = await Promise.all([
+            api("account/info", { account_id: accountId }),
+            api("tanks/stats", { account_id: accountId }),
+            getTankInfo()
+        ]);
+
+        if (playerData.status === "ok") displayPlayerStats(playerData.data[String(accountId)]);
+
+        if (tanksData.status === "ok") {
+            let tanks = tanksData.data[String(accountId)] || [];
+            enrichTanks(tanks, tankInfo);
+            allTankData = tanks;
+            displayTankTable(tanks);
+            displayCharts(tanks);
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        $("lastBattle").textContent = t("errorData");
+    }
+}
+
+function enrichTanks(tanks, tankInfo) {
+    tanks.forEach(t => {
+        const info = tankInfo[String(t.tank_id)] || {};
+        t.tank_name = info.name || `#${t.tank_id}`;
+        t.tank_tier = info.tier || 0;
+        t.tank_type = info.type || "";
+        t.tank_nation = info.nation || "unknown";
+        t.is_premium = info.is_premium || false;
+        t.tank_image = (info.images || {}).preview || "";
+        t.in_encyclopedia = !!info.name;
+    });
+}
+
+function resetStats() {
+    ["statBattles","statWinrate","statAvgDmg","statAvgFrags","statSurvival","statAccuracy","statMaxFrags"]
+        .forEach(id => $(id).textContent = "—");
+    $("statWinsFor1Pct").innerHTML = `<span class="stat-value">—</span>`;
+    $("statWinsLabel").textContent = t("winsFor1Pct");
+}
+
+// ==================== DISPLAY STATS ====================
+function displayPlayerStats(player) {
+    if (!player || !player.statistics) return;
+    const s = player.statistics.all;
+    const b = s.battles || 0;
+
+    $("playerName").textContent = player.nickname;
+    if (player.last_battle_time) {
+        const d = new Date(player.last_battle_time * 1000);
+        $("lastBattle").textContent = `${t("lastBattle")} ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`;
+    }
+
+    $("statBattles").textContent = b.toLocaleString();
+    const wr = b > 0 ? (s.wins / b * 100) : 0;
+    const wrEl = $("statWinrate");
+    wrEl.textContent = wr.toFixed(2) + "%";
+    wrEl.className = "stat-value " + getWrClass(wr);
+    $("statAvgDmg").textContent = (b > 0 ? Math.round(s.damage_dealt / b) : 0).toLocaleString();
+    $("statAvgFrags").textContent = b > 0 ? (s.frags / b).toFixed(2) : "0";
+    $("statSurvival").textContent = b > 0 ? (s.survived_battles / b * 100).toFixed(1) + "%" : "0%";
+    $("statAccuracy").textContent = s.shots > 0 ? (s.hits / s.shots * 100).toFixed(1) + "%" : "0%";
+    const wr1 = b > 0 ? (s.wins / b * 100) : 0;
+    if (b > 0 && wr1 < 99) {
+        const targetWhole = Math.ceil(wr1);
+        const winsToWhole = targetWhole > wr1 ? Math.ceil((targetWhole / 100 * b - s.wins) / (1 - targetWhole / 100)) : 0;
+        const winsTo1Pct = Math.ceil(b / (99 - wr1));
+        $("statWinsFor1Pct").innerHTML = `<span class="stat-value">${winsToWhole}</span><span style="color:var(--brd);font-size:1.2rem">│</span><span class="stat-value">${winsTo1Pct}</span>`;
+        $("statWinsLabel").innerHTML = `${t("winsToWhole")} (${targetWhole}%) │ ${t("winsFor1Pct")}`;
+    } else {
+        $("statWinsFor1Pct").innerHTML = `<span class="stat-value">—</span>`;
+        $("statWinsLabel").textContent = t("winsFor1Pct");
+    }
+    $("statMaxFrags").textContent = s.max_frags || 0;
+}
+
+function getWrClass(wr) {
+    if (wr >= 70) return "wr-unicum";
+    if (wr >= 60) return "wr-great";
+    if (wr >= 50) return "wr-good";
+    return "wr-avg";
+}
+
+// ==================== CHARTS ====================
+function displayCharts(tanks) {
+    const lc = getComputedStyle(document.documentElement).getPropertyValue("--t3").trim() || "#ccc";
+    let wins = 0, losses = 0, draws = 0;
+    tanks.forEach(tk => { const s = tk.all; if (!s) return; wins += s.wins || 0; losses += s.losses || 0; draws += (s.battles||0) - (s.wins||0) - (s.losses||0); });
+
+    if (battlesChart) battlesChart.destroy();
+    battlesChart = new Chart($("battlesChart"), {
+        type: "doughnut",
+        data: { labels: [t("wins"), t("losses"), t("draws")], datasets: [{ data: [wins, losses, draws], backgroundColor: ["#4caf50","#e74c3c","#888"], borderWidth: 0 }] },
+        options: { responsive: true, plugins: { legend: { position: "bottom", labels: { color: lc } } } }
+    });
+
+    const typeMap = { heavyTank: 0, mediumTank: 0, lightTank: 0, "AT-SPG": 0 };
+    tanks.forEach(tk => { if (tk.tank_type && tk.all) typeMap[tk.tank_type] = (typeMap[tk.tank_type] || 0) + (tk.all.battles || 0); });
+
+    if (tankTypesChart) tankTypesChart.destroy();
+    tankTypesChart = new Chart($("tankTypesChart"), {
+        type: "doughnut",
+        data: { labels: [t("HT"), t("MT"), t("LT"), t("TD")], datasets: [{ data: Object.values(typeMap), backgroundColor: ["#e74c3c","#f5a623","#5cc9e8","#7ecb54"], borderWidth: 0 }] },
+        options: { responsive: true, plugins: { legend: { position: "bottom", labels: { color: lc } } } }
+    });
+
+    // Nations chart
+    const NATION_MERGE = { czech:"european", italy:"european" };
+    const NATION_NAMES = { ussr:"СРСР", germany:"Німеччина", usa:"США", france:"Франція", uk:"Британія", china:"Китай", japan:"Японія", european:"Зб. Європи", other:"Зб. нація", unknown:"???" };
+    const NATION_COLORS = { ussr:"#e74c3c", germany:"#888", usa:"#5cc9e8", france:"#3366cc", uk:"#cd7f32", china:"#ffd700", japan:"#ff69b4", european:"#7ecb54", other:"#c8a84e", unknown:"#555" };
+    const nationMap = {};
+    tanks.forEach(tk => { if (tk.tank_nation && tk.all) { const n = NATION_MERGE[tk.tank_nation] || tk.tank_nation; nationMap[n] = (nationMap[n] || 0) + (tk.all.battles || 0); } });
+    const nationEntries = Object.entries(nationMap).sort((a, b) => b[1] - a[1]);
+
+    if (nationsChart) nationsChart.destroy();
+    nationsChart = new Chart($("nationsChart"), {
+        type: "doughnut",
+        data: { labels: nationEntries.map(([n]) => NATION_NAMES[n] || n), datasets: [{ data: nationEntries.map(([,v]) => v), backgroundColor: nationEntries.map(([n]) => NATION_COLORS[n] || "#999"), borderWidth: 0 }] },
+        options: { responsive: true, plugins: { legend: { position: "bottom", labels: { color: lc } } } }
+    });
+
+    // Tiers chart
+    const tierMap = {};
+    tanks.forEach(tk => { if (tk.tank_tier && tk.all) tierMap[tk.tank_tier] = (tierMap[tk.tank_tier] || 0) + (tk.all.battles || 0); });
+    const tierLabels = []; const tierData = [];
+    for (let i = 1; i <= 10; i++) { tierLabels.push(TIER_ROMAN[i] || i); tierData.push(tierMap[i] || 0); }
+
+    if (tiersChart) tiersChart.destroy();
+    tiersChart = new Chart($("tiersChart"), {
+        type: "bar",
+        data: { labels: tierLabels, datasets: [{ data: tierData, backgroundColor: "#f5a623", borderRadius: 4 }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: lc } }, y: { ticks: { color: lc }, grid: { color: "rgba(255,255,255,0.05)" } } } }
+    });
+}
+
+// ==================== TANK TABLE ====================
+const TIER_ROMAN = {1:"I",2:"II",3:"III",4:"IV",5:"V",6:"VI",7:"VII",8:"VIII",9:"IX",10:"X"};
+const TYPE_KEY = { heavyTank:"HT", mediumTank:"MT", lightTank:"LT", "AT-SPG":"TD" };
+
+let currentSort = "battles";
+let sortDir = "desc"; // "asc" or "desc"
+
+function setSort(field) {
+    if (currentSort === field) {
+        sortDir = sortDir === "desc" ? "asc" : "desc";
+    } else {
+        currentSort = field;
+        sortDir = "desc";
+    }
+    // Sync dropdown if it has this value
+    const sf = $("sortFilter");
+    if ([...sf.options].some(o => o.value === field)) sf.value = field;
+    // Update header classes
+    document.querySelectorAll("#tab-tanks th.sortable").forEach(th => {
+        th.classList.remove("sort-asc", "sort-desc");
+        if (th.dataset.sort === currentSort) th.classList.add(sortDir === "asc" ? "sort-asc" : "sort-desc");
+    });
+    displayTankTable(allTankData);
+}
+
+$("tankSearch").addEventListener("input", () => displayTankTable(allTankData));
+$("tierFilter").addEventListener("change", () => displayTankTable(allTankData));
+$("typeFilter").addEventListener("change", () => displayTankTable(allTankData));
+$("sortFilter").addEventListener("change", () => { currentSort = $("sortFilter").value; sortDir = "desc"; setSort(currentSort); });
+$("hideRemoved").addEventListener("change", () => displayTankTable(allTankData));
+
+document.querySelectorAll("#tab-tanks th.sortable").forEach(th => {
+    th.addEventListener("click", () => setSort(th.dataset.sort));
+});
+
+function getSortValue(tk, field) {
+    const s = tk.all, b = s.battles || 0;
+    switch (field) {
+        case "name": return (tk.tank_name || "").toLowerCase();
+        case "tier": return tk.tank_tier || 0;
+        case "type": return tk.tank_type || "";
+        case "battles": return b;
+        case "winrate": return b > 0 ? s.wins / b : 0;
+        case "avg_dmg": return b > 0 ? s.damage_dealt / b : 0;
+        case "avg_frags": return b > 0 ? s.frags / b : 0;
+        case "max_xp": return s.max_xp || 0;
+        case "wins_for_1pct": { const wr = b > 0 ? s.wins/b*100 : 0; return wr >= 99 ? 99999 : Math.ceil(b/(99-wr)); }
+        default: return b;
+    }
+}
+
+function displayTankTable(tanks) {
+    const tbody = $("tankTableBody");
+    let filtered = tanks.filter(tk => tk.all && tk.all.battles > 0);
+
+    if ($("hideRemoved").checked) filtered = filtered.filter(tk => tk.in_encyclopedia);
+
+    const search = $("tankSearch").value.trim().toLowerCase();
+    if (search) filtered = filtered.filter(tk => (tk.tank_name || "").toLowerCase().includes(search));
+
+    const tier = $("tierFilter").value;
+    if (tier) filtered = filtered.filter(tk => tk.tank_tier == tier);
+    const type = $("typeFilter").value;
+    if (type) filtered = filtered.filter(tk => tk.tank_type === type);
+
+    filtered.sort((a, b) => {
+        const va = getSortValue(a, currentSort), vb = getSortValue(b, currentSort);
+        let cmp = 0;
+        if (typeof va === "string") cmp = va.localeCompare(vb);
+        else cmp = va - vb;
+        return sortDir === "desc" ? -cmp : cmp;
+    });
+
+    tbody.innerHTML = filtered.map(tk => {
+        const s = tk.all, b = s.battles || 0;
+        const wr = b > 0 ? (s.wins / b * 100) : 0;
+        const avgDmg = b > 0 ? Math.round(s.damage_dealt / b) : 0;
+        const avgFrags = b > 0 ? (s.frags / b).toFixed(2) : "0";
+        const nc = tk.is_premium ? "premium" : "";
+        const img = tk.tank_image ? `<img src="${tk.tank_image}" alt="" loading="lazy">` : "";
+        const name = tk.tank_name || `#${tk.tank_id}`;
+        return `<tr>
+            <td><div class="tank-name-cell">${img}<span class="${nc}">${name}</span></div></td>
+            <td>${TIER_ROMAN[tk.tank_tier] || tk.tank_tier}</td>
+            <td>${t(TYPE_KEY[tk.tank_type] || "") || tk.tank_type || "?"}</td>
+            <td>${b.toLocaleString()}</td>
+            <td class="${getWrClass(wr)}">${wr.toFixed(1)}%</td>
+            <td>${avgDmg.toLocaleString()}</td>
+            <td>${avgFrags}</td>
+            <td>${(s.max_xp || 0).toLocaleString()}</td>
+            <td>${wr >= 99 ? "∞" : Math.ceil(b / (99 - wr))}</td>
+        </tr>`;
+    }).join("");
+}
+
+// ==================== SESSIONS (MULTI) ====================
+function getSessions() {
+    return JSON.parse(localStorage.getItem("clstats_sessions") || "[]");
+}
+
+function saveSessions(sessions) {
+    localStorage.setItem("clstats_sessions", JSON.stringify(sessions));
+}
+
+function renderSessions() {
+    const sessions = getSessions();
+    const container = $("sessionsContainer");
+    const empty = $("sessionEmpty");
+
+    // Save expanded state before re-render
+    const expandedSet = new Set();
+    container.querySelectorAll(".sess-draggable").forEach(el => {
+        const det = el.querySelector("details");
+        if (det && det.open) expandedSet.add(el.dataset.sess);
+    });
+
+    if (sessions.length === 0) {
+        container.innerHTML = "";
+        empty.classList.remove("hidden");
+        return;
+    }
+    empty.classList.add("hidden");
+
+    const autoExpand = $("sessAutoExpand") && $("sessAutoExpand").checked;
+
+    // Save expanded account groups
+    const expandedGroups = new Set();
+    container.querySelectorAll("details.sess-group").forEach(det => {
+        if (det.open) expandedGroups.add(det.dataset.accId);
+    });
+
+    // Group sessions by account
+    const groups = [];
+    const groupMap = {};
+    sessions.forEach((s, i) => {
+        const key = s.accountId || "unknown";
+        if (!groupMap[key]) {
+            groupMap[key] = { nick: s.accountNick || "???", accountId: key, indices: [] };
+            groups.push(groupMap[key]);
+        }
+        groupMap[key].indices.push(i);
+    });
+
+    const renderCard = (s, i) => {
+        const d = new Date(s.startTime);
+        const timeStr = `${t("sessionStarted")} ${d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})} (${d.toLocaleDateString()})`;
+        const diffs = s.diffs || [];
+        const tb = diffs.reduce((sum, d) => sum + d.battles, 0);
+        const tw = diffs.reduce((sum, d) => sum + d.wins, 0);
+        const td = diffs.reduce((sum, d) => sum + d.damage_dealt, 0);
+        const tf = diffs.reduce((sum, d) => sum + d.frags, 0);
+        const wr = tb > 0 ? (tw / tb * 100) : 0;
+        const avgDmg = tb > 0 ? Math.round(td / tb) : 0;
+        const avgFrags = tb > 0 ? (tf / tb).toFixed(2) : "0";
+
+        return `<div class="tanks-section sess-draggable" style="margin-bottom:15px" data-sess="${i}" draggable="true">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span class="drag-handle" title="Drag to reorder">&#9776;</span>
+                    <strong style="color:var(--acc);font-size:1rem;cursor:pointer" onclick="renameSession(${i})" title="Click to rename">${s.name}</strong>
+                    <span style="color:var(--t2);font-size:.8rem">${timeStr}</span>
+                </div>
+                <div style="display:flex;gap:6px">
+                    <button class="btn btn-ghost btn-sm" onclick="renameSession(${i})">&#9998;</button>
+                    <button class="btn btn-sm" style="background:var(--bg2);color:var(--t1);border:1px solid var(--brd)" onclick="resetSession(${i})">${t("sessReset")}</button>
+                    <button class="btn btn-sm" style="background:var(--bg2);color:var(--t2);border:1px solid var(--brd)" onclick="archiveSession(${i})">${t("sessArchiveBtn")}</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSession(${i})">${t("sessionStop")}</button>
+                </div>
+            </div>
+            <div class="session-stats-grid">
+                <div class="session-stat-card"><div class="stat-value">${tb}</div><div class="stat-label">${t("sessBattles")}</div></div>
+                <div class="session-stat-card"><div class="stat-value ${tb > 0 ? getWrClass(wr) : ''}">${tb > 0 ? wr.toFixed(1) + "%" : "—"}</div><div class="stat-label">${t("sessWR")}</div></div>
+                <div class="session-stat-card"><div class="stat-value">${tb > 0 ? avgDmg.toLocaleString() : "—"}</div><div class="stat-label">${t("sessAvgDmg")}</div></div>
+                <div class="session-stat-card"><div class="stat-value">${tb > 0 ? avgFrags : "—"}</div><div class="stat-label">${t("sessAvgFrags")}</div></div>
+            </div>
+            ${diffs.length > 0 ? `<details${autoExpand || expandedSet.has(String(i)) ? " open" : ""}><summary style="cursor:pointer;color:var(--t2);font-size:.85rem;margin-bottom:8px">${t("sessTanks")} (${diffs.length})</summary>
+            <div class="table-wrap">
+                <table><thead><tr>
+                    <th class="sortable sort-desc" data-sess-idx="${i}" data-ssort="name" style="cursor:pointer">${t("thTank")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="tier" style="cursor:pointer">${t("thTier")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="type" style="cursor:pointer">${t("thType")}</th>
+                    <th class="sortable sort-desc" data-sess-idx="${i}" data-ssort="battles" style="cursor:pointer">${t("battles")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="wins" style="cursor:pointer">${t("wins")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="winrate" style="cursor:pointer">${t("winrate")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="avg_dmg" style="cursor:pointer">${t("avgDmg")}</th>
+                    <th class="sortable" data-sess-idx="${i}" data-ssort="avg_frags" style="cursor:pointer">${t("avgFrags")}</th>
+                </tr></thead><tbody id="sess-tbody-${i}">${renderSessionRows(diffs, "battles", "desc")}</tbody></table>
+            </div></details>` : `<div style="text-align:center;color:var(--t2);padding:15px;font-size:.85rem">${t("noBattlesYet")}</div>`}
+        </div>`;
+    };
+
+    if (groups.length === 1) {
+        container.innerHTML = groups[0].indices.map(i => renderCard(sessions[i], i)).join("");
+    } else {
+        container.innerHTML = groups.map((g, gi) => {
+            const isOpen = expandedGroups.has(String(g.accountId)) || expandedGroups.size === 0;
+            return `<details class="sess-group" data-acc-id="${g.accountId}"${isOpen ? " open" : ""} style="margin-bottom:12px">
+                <summary style="cursor:pointer;font-size:1.05rem;font-weight:600;color:var(--acc);padding:8px 0;display:flex;align-items:center;gap:8px">
+                    ${g.nick} <span style="color:var(--t2);font-weight:400;font-size:.85rem">(${g.indices.length})</span>
+                    <span style="margin-left:auto;display:flex;gap:2px">
+                        ${gi > 0 ? `<button class="btn btn-ghost btn-sm" onclick="event.preventDefault();moveAccountGroup('${g.accountId}',-1)" style="font-size:.7rem;padding:2px 6px">▲</button>` : ""}
+                        ${gi < groups.length - 1 ? `<button class="btn btn-ghost btn-sm" onclick="event.preventDefault();moveAccountGroup('${g.accountId}',1)" style="font-size:.7rem;padding:2px 6px">▼</button>` : ""}
+                    </span>
+                </summary>
+                ${g.indices.map(i => renderCard(sessions[i], i)).join("")}
+            </details>`;
+        }).join("");
+    }
+
+    // Attach sort click handlers to session table headers
+    container.querySelectorAll("th.sortable[data-ssort]").forEach(th => {
+        th.addEventListener("click", () => sortSessionColumn(+th.dataset.sessIdx, th.dataset.ssort));
+    });
+
+    // Drag & drop reordering
+    let dragIdx = null;
+    container.querySelectorAll(".sess-draggable").forEach(el => {
+        el.addEventListener("dragstart", e => {
+            dragIdx = +el.dataset.sess;
+            el.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+        });
+        el.addEventListener("dragend", () => {
+            el.classList.remove("dragging");
+            container.querySelectorAll(".sess-draggable").forEach(x => x.classList.remove("drag-over"));
+            dragIdx = null;
+        });
+        el.addEventListener("dragover", e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            el.classList.add("drag-over");
+        });
+        el.addEventListener("dragleave", () => {
+            el.classList.remove("drag-over");
+        });
+        el.addEventListener("drop", e => {
+            e.preventDefault();
+            el.classList.remove("drag-over");
+            const dropIdx = +el.dataset.sess;
+            if (dragIdx === null || dragIdx === dropIdx) return;
+            const sessions = getSessions();
+            const [moved] = sessions.splice(dragIdx, 1);
+            sessions.splice(dropIdx, 0, moved);
+            saveSessions(sessions);
+            renderSessions();
+        });
+    });
+}
+
+function moveAccountGroup(accountId, dir) {
+    const sessions = getSessions();
+    // Build group order
+    const order = [];
+    const seen = new Set();
+    sessions.forEach(s => {
+        const key = String(s.accountId || "unknown");
+        if (!seen.has(key)) { order.push(key); seen.add(key); }
+    });
+    const idx = order.indexOf(String(accountId));
+    if (idx < 0) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= order.length) return;
+    [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+    // Re-sort sessions by new group order
+    const sorted = [];
+    order.forEach(accId => {
+        sessions.forEach(s => { if (String(s.accountId || "unknown") === accId) sorted.push(s); });
+    });
+    saveSessions(sorted);
+    renderSessions();
+}
+
+async function startSession() {
+    if (!currentAccountId) { alert(t("findFirst")); return; }
+
+    const name = $("sessionName").value.trim() || `${t("sessionDefault")} ${getSessions().length + 1}`;
+
+    const [tanksData, tankInfo] = await Promise.all([ api("tanks/stats", { account_id: currentAccountId }), getTankInfo() ]);
+    if (tanksData.status !== "ok") { alert(t("errorData")); return; }
+
+    let tanks = tanksData.data[String(currentAccountId)] || [];
+    enrichTanks(tanks, tankInfo);
+
+    const sessions = getSessions();
+    const nick = $("playerName").textContent || "???";
+    sessions.unshift({ name, startTime: new Date().toISOString(), accountId: currentAccountId, accountNick: nick, tanks, diffs: [] });
+    saveSessions(sessions);
+
+    $("sessionName").value = "";
+    renderSessions();
+}
+
+async function refreshSession(idx) {
+    const sessions = getSessions();
+    const sess = sessions[idx];
+    if (!sess) return;
+
+    const [tanksData, tankInfo] = await Promise.all([ api("tanks/stats", { account_id: sess.accountId }), getTankInfo() ]);
+    if (tanksData.status !== "ok") { alert(t("errorData")); return; }
+
+    let cur = tanksData.data[String(sess.accountId)] || [];
+    enrichTanks(cur, tankInfo);
+
+    const oldMap = {};
+    sess.tanks.forEach(tk => { oldMap[tk.tank_id] = tk; });
+
+    const diffs = [];
+    cur.forEach(tk => {
+        const old = oldMap[tk.tank_id];
+        if (!tk.all) return;
+        const oa = old && old.all ? old.all : { battles:0, wins:0, losses:0, damage_dealt:0, frags:0, survived_battles:0, max_frags:0, max_xp:0 };
+        const bd = (tk.all.battles||0) - (oa.battles||0);
+        if (bd > 0) {
+            const newMaxFrags = tk.all.max_frags||0, oldMaxFrags = oa.max_frags||0;
+            const newMaxXp = tk.all.max_xp||0, oldMaxXp = oa.max_xp||0;
+            diffs.push({
+                tank_name: tk.tank_name, tank_tier: tk.tank_tier, tank_type: tk.tank_type,
+                tank_image: tk.tank_image, is_premium: tk.is_premium,
+                battles: bd, wins: (tk.all.wins||0) - (oa.wins||0),
+                damage_dealt: (tk.all.damage_dealt||0) - (oa.damage_dealt||0),
+                frags: (tk.all.frags||0) - (oa.frags||0),
+                survived: (tk.all.survived_battles||0) - (oa.survived_battles||0),
+                max_frags: newMaxFrags > oldMaxFrags ? newMaxFrags : 0,
+                max_xp: newMaxXp > oldMaxXp ? newMaxXp : 0
+            });
+        }
+    });
+
+    sessions[idx].diffs = diffs;
+    saveSessions(sessions);
+    renderSessions();
+}
+
+async function refreshAllSessions() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    try {
+        const sessions = getSessions();
+        for (let i = 0; i < sessions.length; i++) {
+            await refreshSession(i);
+        }
+    } catch(e) { console.error("Auto-refresh error:", e); }
+    isRefreshing = false;
+}
+
+// Auto-refresh
+let autoRefreshTimer = null;
+let isRefreshing = false;
+
+function setupAutoRefresh() {
+    const cb = $("sessAutoRefresh");
+    const sel = $("sessAutoInterval");
+    if (!cb) return;
+
+    cb.addEventListener("change", () => {
+        sel.style.display = cb.checked ? "inline-block" : "none";
+        localStorage.setItem("clstats_autorefresh", cb.checked ? "1" : "0");
+        toggleAutoRefresh();
+    });
+    sel.addEventListener("change", () => {
+        localStorage.setItem("clstats_autointerval", sel.value);
+        toggleAutoRefresh();
+    });
+
+    // Restore saved state
+    if (localStorage.getItem("clstats_autorefresh") === "1") {
+        cb.checked = true;
+        sel.style.display = "inline-block";
+        const saved = localStorage.getItem("clstats_autointerval");
+        if (saved) sel.value = saved;
+    }
+    toggleAutoRefresh();
+}
+
+function toggleAutoRefresh() {
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+    const cb = $("sessAutoRefresh");
+    if (!cb || !cb.checked) return;
+    const sec = +($("sessAutoInterval").value || 180);
+    autoRefreshTimer = setInterval(() => {
+        if (getSessions().length > 0) refreshAllSessions();
+    }, sec * 1000);
+}
+
+let visibilityTimer = null;
+document.addEventListener("visibilitychange", () => {
+    if (visibilityTimer) clearTimeout(visibilityTimer);
+    if (!document.hidden && $("sessAutoRefresh") && $("sessAutoRefresh").checked && getSessions().length > 0) {
+        visibilityTimer = setTimeout(() => refreshAllSessions(), 500);
+    }
+});
+
+// Session sort state per index
+const sessionSortState = {};
+
+function getSessionSort(idx) {
+    if (!sessionSortState[idx]) sessionSortState[idx] = { field: "battles", dir: "desc" };
+    return sessionSortState[idx];
+}
+
+function sortSessionColumn(idx, field) {
+    const state = getSessionSort(idx);
+    if (state.field === field) {
+        state.dir = state.dir === "desc" ? "asc" : "desc";
+    } else {
+        state.field = field;
+        state.dir = "desc";
+    }
+    // Update header classes
+    const container = document.querySelector(`[data-sess="${idx}"]`);
+    if (container) {
+        container.querySelectorAll("th.sortable").forEach(th => {
+            th.classList.remove("sort-asc", "sort-desc");
+            if (th.dataset.ssort === field) th.classList.add(state.dir === "asc" ? "sort-asc" : "sort-desc");
+        });
+    }
+    // Re-render rows
+    const sessions = getSessions();
+    const diffs = sessions[idx]?.diffs || [];
+    const tbody = document.getElementById(`sess-tbody-${idx}`);
+    if (tbody) tbody.innerHTML = renderSessionRows(diffs, state.field, state.dir);
+}
+
+function renderSessionRows(diffs, sortField, sortDir) {
+    const sorted = [...diffs].sort((a, b) => {
+        let va, vb;
+        switch (sortField) {
+            case "name": va = (a.tank_name||"").toLowerCase(); vb = (b.tank_name||"").toLowerCase(); break;
+            case "tier": va = a.tank_tier||0; vb = b.tank_tier||0; break;
+            case "type": va = a.tank_type||""; vb = b.tank_type||""; break;
+            case "battles": va = a.battles; vb = b.battles; break;
+            case "wins": va = a.wins; vb = b.wins; break;
+            case "winrate": va = a.battles>0 ? a.wins/a.battles : 0; vb = b.battles>0 ? b.wins/b.battles : 0; break;
+            case "avg_dmg": va = a.battles>0 ? a.damage_dealt/a.battles : 0; vb = b.battles>0 ? b.damage_dealt/b.battles : 0; break;
+            case "avg_frags": va = a.battles>0 ? a.frags/a.battles : 0; vb = b.battles>0 ? b.frags/b.battles : 0; break;
+            default: va = a.battles; vb = b.battles;
+        }
+        let cmp = typeof va === "string" ? va.localeCompare(vb) : va - vb;
+        return sortDir === "desc" ? -cmp : cmp;
+    });
+    return sorted.map(d => {
+        const dwr = d.battles > 0 ? (d.wins / d.battles * 100) : 0;
+        const davg = d.battles > 0 ? Math.round(d.damage_dealt / d.battles) : 0;
+        const nc = d.is_premium ? "premium" : "";
+        const img = d.tank_image ? `<img src="${d.tank_image}" alt="" loading="lazy">` : "";
+        return `<tr>
+            <td><div class="tank-name-cell">${img}<span class="${nc}">${d.tank_name || "?"}</span></div></td>
+            <td>${TIER_ROMAN[d.tank_tier] || d.tank_tier}</td>
+            <td>${t(TYPE_KEY[d.tank_type] || "") || "?"}</td>
+            <td>${d.battles}</td><td>${d.wins}</td>
+            <td class="${getWrClass(dwr)}">${dwr.toFixed(1)}%</td>
+            <td>${davg.toLocaleString()}</td>
+            <td>${d.battles > 0 ? (d.frags / d.battles).toFixed(2) : "0"}</td>
+        </tr>`;
+    }).join("");
+}
+
+function renameSession(idx) {
+    const sessions = getSessions();
+    const newName = prompt("", sessions[idx].name);
+    if (newName === null || !newName.trim()) return;
+    sessions[idx].name = newName.trim();
+    saveSessions(sessions);
+    renderSessions();
+}
+
+async function resetSession(idx) {
+    const sessions = getSessions();
+    const sess = sessions[idx];
+    if (!sess) return;
+
+    const [tanksData, tankInfo] = await Promise.all([ api("tanks/stats", { account_id: sess.accountId }), getTankInfo() ]);
+    if (tanksData.status !== "ok") { alert(t("errorData")); return; }
+
+    let tanks = tanksData.data[String(sess.accountId)] || [];
+    enrichTanks(tanks, tankInfo);
+
+    sessions[idx].tanks = tanks;
+    sessions[idx].diffs = [];
+    sessions[idx].startTime = new Date().toISOString();
+    saveSessions(sessions);
+    renderSessions();
+}
+
+function deleteSession(idx) {
+    if (!confirm(t("confirmStop"))) return;
+    const sessions = getSessions();
+    sessions.splice(idx, 1);
+    saveSessions(sessions);
+    renderSessions();
+}
+
+// ==================== SESSION ARCHIVE ====================
+function getArchive() { return JSON.parse(localStorage.getItem("clstats_archive") || "[]"); }
+function saveArchive(a) { localStorage.setItem("clstats_archive", JSON.stringify(a)); }
+
+function archiveSession(idx) {
+    const sessions = getSessions();
+    const sess = sessions[idx];
+    if (!sess) return;
+    const archive = getArchive();
+    const diffs = sess.diffs || [];
+    const tb = diffs.reduce((s, d) => s + d.battles, 0);
+    if (tb === 0) return;
+    archive.unshift({
+        name: sess.name,
+        startTime: sess.startTime,
+        archivedTime: Date.now(),
+        accountId: sess.accountId,
+        battles: tb,
+        wins: diffs.reduce((s, d) => s + d.wins, 0),
+        damage: diffs.reduce((s, d) => s + d.damage_dealt, 0),
+        frags: diffs.reduce((s, d) => s + d.frags, 0),
+        tanksCount: diffs.length,
+        baseTanks: sess.tanks,
+        diffs: diffs
+    });
+    saveArchive(archive);
+    sessions.splice(idx, 1);
+    saveSessions(sessions);
+    renderSessions();
+    renderArchive();
+}
+
+function restoreArchive(idx) {
+    const archive = getArchive();
+    const a = archive[idx];
+    if (!a) return;
+    const sessions = getSessions();
+    sessions.push({ name: a.name, startTime: a.startTime, accountId: a.accountId || currentAccountId, tanks: a.baseTanks || [], diffs: a.diffs || [] });
+    saveSessions(sessions);
+    archive.splice(idx, 1);
+    saveArchive(archive);
+    renderSessions();
+    renderArchive();
+}
+
+function deleteArchive(idx) {
+    if (!confirm(t("confirmStop"))) return;
+    const archive = getArchive();
+    archive.splice(idx, 1);
+    saveArchive(archive);
+    renderArchive();
+}
+
+function clearArchive() {
+    if (!confirm(t("confirmStop"))) return;
+    saveArchive([]);
+    renderArchive();
+}
+
+function renderArchive() {
+    const container = $("archiveContainer");
+    if (!container) return;
+    const archive = getArchive();
+    if (archive.length === 0) {
+        container.innerHTML = `<p style="color:var(--t2);font-size:.85rem">${t("sessArchiveEmpty")}</p>`;
+        return;
+    }
+    container.innerHTML = archive.map((a, i) => {
+        const wr = a.battles > 0 ? (a.wins / a.battles * 100) : 0;
+        const avgDmg = a.battles > 0 ? Math.round(a.damage / a.battles) : 0;
+        const d1 = new Date(a.startTime);
+        const d2 = new Date(a.archivedTime);
+        const diffs = a.diffs || [];
+        return `<div class="tanks-section" style="margin-bottom:10px;padding:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <strong style="color:var(--acc);font-size:.9rem">${a.name}</strong>
+                    <span style="color:var(--t2);font-size:.75rem">${d1.toLocaleDateString()} — ${d2.toLocaleDateString()}</span>
+                </div>
+                <div style="display:flex;gap:4px">
+                    <button class="btn btn-secondary btn-sm" onclick="restoreArchive(${i})" style="font-size:.75rem">${t("sessRestoreBtn")}</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteArchive(${i})" style="font-size:.75rem">${t("sessDeleteBtn")}</button>
+                </div>
+            </div>
+            <div style="display:flex;gap:15px;flex-wrap:wrap;font-size:.85rem">
+                <span>${t("sessBattles")}: <b>${a.battles}</b></span>
+                <span>${t("sessWR")}: <b class="${getWrClass(wr)}">${wr.toFixed(1)}%</b></span>
+                <span>${t("sessAvgDmg")}: <b>${avgDmg.toLocaleString()}</b></span>
+                <span>${t("sessAvgFrags")}: <b>${a.battles > 0 ? (a.frags/a.battles).toFixed(2) : "0"}</b></span>
+                <span>${t("sessTanks")}: <b>${a.tanksCount || (a.diffs||[]).length}</b></span>
+            </div>
+            ${diffs.length > 0 ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--t2);font-size:.8rem">${t("sessTanks")} (${diffs.length})</summary>
+            <div class="table-wrap" style="margin-top:6px"><table><thead><tr>
+                <th>${t("thTank")}</th><th>${t("thTier")}</th><th>${t("battles")}</th><th>${t("winrate")}</th><th>${t("avgDmg")}</th>
+            </tr></thead><tbody>${diffs.sort((a,b) => b.battles - a.battles).map(d => {
+                const dwr = d.battles > 0 ? (d.wins/d.battles*100).toFixed(1) : "0.0";
+                const davg = d.battles > 0 ? Math.round(d.damage_dealt/d.battles) : 0;
+                const img = d.tank_image ? `<img src="${d.tank_image}" alt="" loading="lazy">` : "";
+                const nc = d.is_premium ? "premium" : "";
+                return `<tr><td><div class="tank-name-cell">${img}<span class="${nc}">${d.tank_name||"?"}</span></div></td>
+                    <td>${TIER_ROMAN[d.tank_tier]||d.tank_tier}</td><td>${d.battles}</td>
+                    <td class="${getWrClass(parseFloat(dwr))}">${dwr}%</td><td>${davg.toLocaleString()}</td></tr>`;
+            }).join("")}</tbody></table></div></details>` : ""}
+        </div>`;
+    }).join("");
+}
+
+// Render archive on load
+document.addEventListener("DOMContentLoaded", () => setTimeout(renderArchive, 100));
+
+// ==================== EXPORT / IMPORT ====================
+function exportData() {
+    const data = {
+        clstats_version: 1,
+        exported: new Date().toISOString(),
+        player: localStorage.getItem("clstats_player"),
+        profiles: localStorage.getItem("clstats_profiles"),
+        sessions: localStorage.getItem("clstats_sessions"),
+        archive: localStorage.getItem("clstats_archive"),
+        theme: localStorage.getItem("clstats_theme"),
+        lang: localStorage.getItem("clstats_lang")
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `blitzstats-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const data = JSON.parse(reader.result);
+            if (data.player) localStorage.setItem("clstats_player", data.player);
+            if (data.profiles) localStorage.setItem("clstats_profiles", data.profiles);
+            if (data.sessions) localStorage.setItem("clstats_sessions", data.sessions);
+            if (data.archive) localStorage.setItem("clstats_archive", data.archive);
+            if (data.theme) localStorage.setItem("clstats_theme", data.theme);
+            if (data.lang) localStorage.setItem("clstats_lang", data.lang);
+            alert(t("importSuccess"));
+            location.reload();
+        } catch (err) {
+            alert(t("importError"));
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+}
+
+// ==================== RATING ====================
+function calcTankRating(tk) {
+    const s = tk.all, b = s.battles || 0;
+    if (b === 0) return 0;
+    const wr = s.wins / b;
+    const avgDmg = s.damage_dealt / b;
+    const avgFrags = s.frags / b;
+    const surv = s.survived_battles / b;
+    // Rating formula: weighted combination normalized by tier
+    const tierMult = Math.max(tk.tank_tier || 1, 1);
+    return Math.round((wr * 1000 + avgDmg / tierMult * 2 + avgFrags * 200 + surv * 150) * 10) / 10;
+}
+
+function getRecentTankData() {
+    // Combine diffs from all active sessions and archive into per-tank stats
+    const sessions = getSessions();
+    const archive = getArchive();
+    const allDiffs = [];
+    sessions.forEach(s => (s.diffs || []).forEach(d => allDiffs.push(d)));
+    archive.forEach(a => (a.diffs || []).forEach(d => allDiffs.push(d)));
+
+    const map = {};
+    allDiffs.forEach(d => {
+        if (!d.tank_name || d.battles <= 0) return;
+        const key = d.tank_name;
+        if (!map[key]) map[key] = { tank_name: d.tank_name, tank_tier: d.tank_tier, tank_type: d.tank_type, tank_image: d.tank_image, is_premium: d.is_premium, all: { battles:0, wins:0, damage_dealt:0, frags:0, survived_battles:0 } };
+        map[key].all.battles += d.battles;
+        map[key].all.wins += d.wins;
+        map[key].all.damage_dealt += d.damage_dealt;
+        map[key].all.frags += d.frags;
+        map[key].all.survived_battles += (d.survived || 0);
+    });
+    return Object.values(map);
+}
+
+function displayRating() {
+    const bestDiv = $("ratingBest"), worstDiv = $("ratingWorst");
+    const isRecent = $("ratingRecent").checked;
+    const sourceData = isRecent ? getRecentTankData() : allTankData;
+
+    if (!sourceData || sourceData.length === 0) {
+        bestDiv.innerHTML = `<p style="color:var(--t2)">${t("ratingEmpty")}</p>`;
+        worstDiv.innerHTML = "";
+        return;
+    }
+
+    const minB = parseInt($("ratingMinBattles").value) || 20;
+    const tierF = $("ratingTierFilter").value;
+    const typeF = $("ratingTypeFilter").value;
+
+    let filtered = sourceData.filter(tk => tk.all && tk.all.battles >= minB);
+    if (tierF) filtered = filtered.filter(tk => tk.tank_tier == tierF);
+    if (typeF) filtered = filtered.filter(tk => tk.tank_type === typeF);
+
+    const rated = filtered
+        .map(tk => ({ ...tk, rating: calcTankRating(tk) }))
+        .sort((a, b) => b.rating - a.rating);
+
+    function renderRatingTable(title, tanks, color) {
+        if (tanks.length === 0) return `<p style="color:var(--t2)">—</p>`;
+        return `<h3 style="color:${color};margin-bottom:10px">${title}</h3>
+        <div class="table-wrap"><table><thead><tr>
+            <th>#</th><th>${t("thTank")}</th><th>${t("thTier")}</th><th>${t("thType")}</th>
+            <th>${t("battles")}</th><th>${t("winrate")}</th><th>${t("avgDmg")}</th><th>${t("avgFrags")}</th><th>${t("ratingScore")}</th>
+        </tr></thead><tbody>${tanks.map((tk, i) => {
+            const s = tk.all, b = s.battles;
+            const wr = (s.wins / b * 100).toFixed(1);
+            const ad = Math.round(s.damage_dealt / b);
+            const af = (s.frags / b).toFixed(2);
+            const img = tk.tank_image ? `<img src="${tk.tank_image}" alt="" loading="lazy">` : "";
+            const nc = tk.is_premium ? "premium" : "";
+            return `<tr>
+                <td>${i + 1}</td>
+                <td><div class="tank-name-cell">${img}<span class="${nc}">${tk.tank_name || "?"}</span></div></td>
+                <td>${TIER_ROMAN[tk.tank_tier] || tk.tank_tier}</td>
+                <td>${t(TYPE_KEY[tk.tank_type] || "") || "?"}</td>
+                <td>${b}</td><td class="${getWrClass(parseFloat(wr))}">${wr}%</td>
+                <td>${ad.toLocaleString()}</td><td>${af}</td>
+                <td style="color:var(--acc);font-weight:bold">${tk.rating}</td>
+            </tr>`;
+        }).join("")}</tbody></table></div>`;
+    }
+
+    bestDiv.innerHTML = renderRatingTable(t("ratingBest"), rated.slice(0, 10), "#7ecb54");
+    worstDiv.innerHTML = renderRatingTable(t("ratingWorst"), rated.slice(-10).reverse(), "#e74c3c");
+}
+
+// ==================== COMPARE ====================
+async function doCompare() {
+    const n1 = $("cmpInput1").value.trim(), n2 = $("cmpInput2").value.trim();
+    if (!n1 || !n2) return;
+    const res = $("compareResult");
+    res.innerHTML = `<div class="loading">${t("loading")}</div>`;
+
+    try {
+        const [s1, s2] = await Promise.all([
+            api("account/list", { search: n1, limit: 1 }),
+            api("account/list", { search: n2, limit: 1 })
+        ]);
+        const p1 = s1.data?.[0], p2 = s2.data?.[0];
+        if (!p1 || !p2) { res.innerHTML = `<p style="color:var(--t2)">${t("noResults")}</p>`; return; }
+
+        const [d1, d2] = await Promise.all([
+            api("account/info", { account_id: p1.account_id }),
+            api("account/info", { account_id: p2.account_id })
+        ]);
+        const st1 = d1.data?.[String(p1.account_id)]?.statistics?.all;
+        const st2 = d2.data?.[String(p2.account_id)]?.statistics?.all;
+        if (!st1 || !st2) { res.innerHTML = `<p style="color:var(--t2)">${t("errorData")}</p>`; return; }
+
+        const b1 = st1.battles||0, b2 = st2.battles||0;
+        const wr1 = b1>0 ? (st1.wins/b1*100) : 0, wr2 = b2>0 ? (st2.wins/b2*100) : 0;
+        const ad1 = b1>0 ? Math.round(st1.damage_dealt/b1) : 0, ad2 = b2>0 ? Math.round(st2.damage_dealt/b2) : 0;
+        const af1 = b1>0 ? (st1.frags/b1).toFixed(2) : "0", af2 = b2>0 ? (st2.frags/b2).toFixed(2) : "0";
+        const sv1 = b1>0 ? (st1.survived_battles/b1*100).toFixed(1) : "0", sv2 = b2>0 ? (st2.survived_battles/b2*100).toFixed(1) : "0";
+        const ac1 = st1.shots>0 ? (st1.hits/st1.shots*100).toFixed(1) : "0", ac2 = st2.shots>0 ? (st2.hits/st2.shots*100).toFixed(1) : "0";
+        const kd1 = (b1-st1.survived_battles)>0 ? (st1.frags/(b1-st1.survived_battles)).toFixed(2) : "∞";
+        const kd2 = (b2-st2.survived_battles)>0 ? (st2.frags/(b2-st2.survived_battles)).toFixed(2) : "∞";
+
+        function cmpCell(v1, v2, fmt) {
+            const n1 = parseFloat(v1), n2 = parseFloat(v2);
+            const c1 = n1 > n2 ? "color:#7ecb54;font-weight:bold" : n1 < n2 ? "color:var(--t2)" : "";
+            const c2 = n2 > n1 ? "color:#7ecb54;font-weight:bold" : n2 < n1 ? "color:var(--t2)" : "";
+            return `<td style="${c1}">${fmt ? fmt(v1) : v1}</td><td style="${c2}">${fmt ? fmt(v2) : v2}</td>`;
+        }
+        const loc = v => Number(v).toLocaleString();
+        const pct = v => v + "%";
+
+        const rows = [
+            [t("battles"), b1, b2, loc],
+            [t("winrate"), wr1.toFixed(2), wr2.toFixed(2), pct],
+            [t("avgDmg"), ad1, ad2, loc],
+            [t("avgFrags"), af1, af2, null],
+            ["K/D", kd1, kd2, null],
+            [t("survival"), sv1, sv2, pct],
+            [t("accuracy"), ac1, ac2, pct],
+            [t("maxXP"), st1.max_xp||0, st2.max_xp||0, loc],
+        ];
+
+        // Store for tank comparison
+        window._cmpAccounts = { p1: p1.account_id, p2: p2.account_id, n1: p1.nickname, n2: p2.nickname };
+
+        res.innerHTML = `<div class="table-wrap"><table>
+            <thead><tr><th>${t("compareStat")}</th><th>${p1.nickname}</th><th>${p2.nickname}</th></tr></thead>
+            <tbody>${rows.map(([label, v1, v2, fmt]) =>
+                `<tr><td style="color:var(--t2)">${label}</td>${cmpCell(v1, v2, fmt)}</tr>`
+            ).join("")}</tbody>
+        </table></div>`;
+    } catch (err) {
+        res.innerHTML = `<p style="color:var(--t2)">${t("searchError")}</p>`;
+    }
+}
+
+async function doCompareTank() {
+    const tankName = $("cmpTankInput").value.trim().toLowerCase();
+    if (!tankName || !window._cmpAccounts) return;
+    const res = $("compareTankResult");
+    res.innerHTML = `<div class="loading">${t("loading")}</div>`;
+
+    try {
+        const { p1, p2, n1, n2 } = window._cmpAccounts;
+        const tankInfo = await getTankInfo();
+        const [t1data, t2data] = await Promise.all([
+            api("tanks/stats", { account_id: p1 }),
+            api("tanks/stats", { account_id: p2 })
+        ]);
+        const tanks1 = t1data.data?.[String(p1)] || [];
+        const tanks2 = t2data.data?.[String(p2)] || [];
+        enrichTanks(tanks1, tankInfo);
+        enrichTanks(tanks2, tankInfo);
+
+        const find = arr => arr.find(tk => tk.tank_name && tk.tank_name.toLowerCase().includes(tankName) && tk.all && tk.all.battles > 0);
+        const tk1 = find(tanks1), tk2 = find(tanks2);
+        if (!tk1 || !tk2) { res.innerHTML = `<p style="color:var(--t2)">${t("compareNoTank")}</p>`; return; }
+
+        const s1 = tk1.all, s2 = tk2.all;
+        const b1 = s1.battles, b2 = s2.battles;
+        const wr1 = (s1.wins/b1*100).toFixed(1), wr2 = (s2.wins/b2*100).toFixed(1);
+        const ad1 = Math.round(s1.damage_dealt/b1), ad2 = Math.round(s2.damage_dealt/b2);
+        const af1 = (s1.frags/b1).toFixed(2), af2 = (s2.frags/b2).toFixed(2);
+
+        function cmpCell(v1, v2, fmt) {
+            const a = parseFloat(v1), b = parseFloat(v2);
+            const c1 = a > b ? "color:#7ecb54;font-weight:bold" : a < b ? "color:var(--t2)" : "";
+            const c2 = b > a ? "color:#7ecb54;font-weight:bold" : b < a ? "color:var(--t2)" : "";
+            return `<td style="${c1}">${fmt ? fmt(v1) : v1}</td><td style="${c2}">${fmt ? fmt(v2) : v2}</td>`;
+        }
+        const loc = v => Number(v).toLocaleString();
+        const pct = v => v + "%";
+        const img = tk1.tank_image ? `<img src="${tk1.tank_image}" alt="" style="width:32px;vertical-align:middle;margin-right:6px">` : "";
+
+        const rows = [
+            [t("battles"), b1, b2, loc],
+            [t("winrate"), wr1, wr2, pct],
+            [t("avgDmg"), ad1, ad2, loc],
+            [t("avgFrags"), af1, af2, null],
+            [t("maxXP"), s1.max_xp||0, s2.max_xp||0, loc],
+        ];
+
+        res.innerHTML = `<h4 style="color:var(--acc);margin-bottom:8px">${img}${tk1.tank_name} (${TIER_ROMAN[tk1.tank_tier]})</h4>
+        <div class="table-wrap"><table>
+            <thead><tr><th>${t("compareStat")}</th><th>${n1}</th><th>${n2}</th></tr></thead>
+            <tbody>${rows.map(([label, v1, v2, fmt]) =>
+                `<tr><td style="color:var(--t2)">${label}</td>${cmpCell(v1, v2, fmt)}</tr>`
+            ).join("")}</tbody>
+        </table></div>`;
+    } catch (err) {
+        res.innerHTML = `<p style="color:var(--t2)">${t("searchError")}</p>`;
+    }
+}
+
+// ==================== SERVICE WORKER ====================
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
