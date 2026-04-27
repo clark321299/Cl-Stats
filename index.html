@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
@@ -122,7 +122,12 @@
         /* Session */
         .session-controls{display:flex;gap:8px;align-items:center;margin-bottom:15px;flex-wrap:wrap}
         .session-info{color:var(--t2);font-size:.82rem;padding:6px 12px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px}
-        .session-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:15px}
+        .session-stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px;margin-bottom:15px}
+        /* Modal */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.78);z-index:1000;overflow-y:auto;padding:20px 12px}
+        .modal-box{max-width:720px;margin:40px auto;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:22px 20px;position:relative}
+        .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--t2);font-size:1.5rem;cursor:pointer;line-height:1;transition:color .15s}
+        .modal-close:hover{color:var(--t1)}
         .session-stat-card{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:8px 4px;text-align:center}
         .session-stat-card .stat-value{font-size:1.1rem}
         .drag-handle{cursor:grab;font-size:1.2rem;color:var(--t2);user-select:none;transition:color .2s}
@@ -205,7 +210,6 @@
                 <button class="tab-btn active" data-tab="overview" data-i18n="tabOverview"></button>
                 <button class="tab-btn" data-tab="tanks" data-i18n="tabTanks"></button>
                 <button class="tab-btn" data-tab="session" data-i18n="tabSession"></button>
-                <button class="tab-btn" data-tab="rating" data-i18n="tabRating"></button>
                 <button class="tab-btn" data-tab="compare" data-i18n="tabCompare"></button>
                 <button class="tab-btn" data-tab="help" data-i18n="tabHelp"></button>
             </div>
@@ -234,24 +238,74 @@
 
             <!-- Tanks -->
             <div class="tab-content" id="tab-tanks">
-                <div class="tanks-section">
-                    <div class="tank-filters">
-                        <input type="text" id="tankSearch" data-i18n-placeholder="tankSearchPlaceholder" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-size:.85rem;width:160px">
-                        <select id="tierFilter"><option value="" data-i18n="allTiers"></option></select>
-                        <select id="typeFilter"><option value="" data-i18n="allTypes"></option></select>
-                        <select id="sortFilter"></select>
-                        <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
-                            <input type="checkbox" id="hideRemoved" checked> <span data-i18n="hideRemoved"></span>
-                        </label>
+                <!-- Sub-tabs -->
+                <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--brd)">
+                    <button id="tankSubListBtn" onclick="switchTanksTab('list')"
+                        style="padding:8px 20px;background:none;border:none;border-bottom:2px solid var(--acc);margin-bottom:-2px;color:var(--acc);font-weight:600;font-size:.9rem;cursor:pointer">
+                        🔫 <span data-i18n="tabTanks"></span>
+                    </button>
+                    <button id="tankSubRatingBtn" onclick="switchTanksTab('rating')"
+                        style="padding:8px 20px;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--t2);font-size:.9rem;cursor:pointer">
+                        🏆 <span data-i18n="tabRating"></span>
+                    </button>
+                </div>
+
+                <!-- Tank list -->
+                <div id="tanksSubList">
+                    <div class="tanks-section">
+                        <div class="tank-filters">
+                            <input type="text" id="tankSearch" data-i18n-placeholder="tankSearchPlaceholder" style="padding:6px 10px;border-radius:8px;border:1px solid var(--brd);background:var(--bg-in);color:var(--t1);font-size:.85rem;width:160px">
+                            <select id="tierFilter"><option value="" data-i18n="allTiers"></option></select>
+                            <select id="typeFilter"><option value="" data-i18n="allTypes"></option></select>
+                            <select id="sortFilter"></select>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
+                                <input type="checkbox" id="hideRemoved" checked> <span data-i18n="hideRemoved"></span>
+                            </label>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead><tr>
+                                    <th class="sortable" data-sort="name" data-i18n="thTank"></th>
+                                    <th class="sortable" data-sort="tier" data-i18n="thTier"></th>
+                                    <th class="sortable" data-sort="type" data-i18n="thType"></th>
+                                    <th class="sortable sort-desc" data-sort="battles" data-i18n="battles"></th>
+                                    <th class="sortable" data-sort="winrate" data-i18n="winrate"></th>
+                                    <th class="sortable" data-sort="avg_dmg" data-i18n="avgDmg"></th>
+                                    <th class="sortable" data-sort="avg_frags" data-i18n="avgFrags"></th>
+                                    <th class="sortable" data-sort="max_xp" data-i18n="maxXP"></th>
+                                    <th class="sortable" data-sort="wins_for_1pct" data-i18n="winsFor1Pct"></th>
+                                </tr></thead>
+                                <tbody id="tankTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr>
-                                <th class="sortable" data-sort="name" data-i18n="thTank"></th><th class="sortable" data-sort="tier" data-i18n="thTier"></th><th class="sortable" data-sort="type" data-i18n="thType"></th>
-                                <th class="sortable sort-desc" data-sort="battles" data-i18n="battles"></th><th class="sortable" data-sort="winrate" data-i18n="winrate"></th><th class="sortable" data-sort="avg_dmg" data-i18n="avgDmg"></th><th class="sortable" data-sort="avg_frags" data-i18n="avgFrags"></th><th class="sortable" data-sort="max_xp" data-i18n="maxXP"></th><th class="sortable" data-sort="wins_for_1pct" data-i18n="winsFor1Pct"></th>
-                            </tr></thead>
-                            <tbody id="tankTableBody"></tbody>
-                        </table>
+                </div>
+
+                <!-- Rating -->
+                <div id="tanksSubRating" style="display:none">
+                    <div class="tanks-section">
+                        <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+                            <label style="color:var(--t2);font-size:.85rem" data-i18n="ratingMinBattles"></label>
+                            <input type="number" id="ratingMinBattles" value="20" min="1" max="500" style="width:70px;padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none">
+                            <select id="ratingTierFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
+                                <option value="" data-i18n="allTiers"></option>
+                                <option value="10">X</option><option value="9">IX</option><option value="8">VIII</option><option value="7">VII</option><option value="6">VI</option>
+                                <option value="5">V</option><option value="4">IV</option><option value="3">III</option><option value="2">II</option><option value="1">I</option>
+                            </select>
+                            <select id="ratingTypeFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
+                                <option value="" data-i18n="allTypes"></option>
+                                <option value="heavyTank" data-i18n="HT"></option>
+                                <option value="mediumTank" data-i18n="MT"></option>
+                                <option value="lightTank" data-i18n="LT"></option>
+                                <option value="AT-SPG" data-i18n="TD"></option>
+                            </select>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
+                                <input type="checkbox" id="ratingRecent"> <span data-i18n="ratingRecent"></span>
+                            </label>
+                            <button class="btn btn-sm" onclick="displayRating()" data-i18n="sessionRefresh"></button>
+                        </div>
+                        <div id="ratingBest"></div>
+                        <div id="ratingWorst" style="margin-top:15px"></div>
                     </div>
                 </div>
             </div>
@@ -281,34 +335,6 @@
                     <div style="margin-bottom:8px"><button class="btn btn-danger btn-sm" onclick="clearArchive()" data-i18n="sessClearArchive"></button></div>
                     <div id="archiveContainer"></div>
                 </details>
-            </div>
-
-            <!-- Rating -->
-            <div class="tab-content" id="tab-rating">
-                <div class="tanks-section" style="margin-bottom:15px">
-                    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
-                        <label style="color:var(--t2);font-size:.85rem" data-i18n="ratingMinBattles"></label>
-                        <input type="number" id="ratingMinBattles" value="20" min="1" max="500" style="width:70px;padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none">
-                        <select id="ratingTierFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
-                            <option value="" data-i18n="allTiers"></option>
-                            <option value="10">X</option><option value="9">IX</option><option value="8">VIII</option><option value="7">VII</option><option value="6">VI</option>
-                            <option value="5">V</option><option value="4">IV</option><option value="3">III</option><option value="2">II</option><option value="1">I</option>
-                        </select>
-                        <select id="ratingTypeFilter" style="padding:5px 8px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem">
-                            <option value="" data-i18n="allTypes"></option>
-                            <option value="heavyTank" data-i18n="HT"></option>
-                            <option value="mediumTank" data-i18n="MT"></option>
-                            <option value="lightTank" data-i18n="LT"></option>
-                            <option value="AT-SPG" data-i18n="TD"></option>
-                        </select>
-                        <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer">
-                            <input type="checkbox" id="ratingRecent"> <span data-i18n="ratingRecent"></span>
-                        </label>
-                        <button class="btn btn-sm" onclick="displayRating()" data-i18n="sessionRefresh"></button>
-                    </div>
-                    <div id="ratingBest"></div>
-                    <div id="ratingWorst" style="margin-top:15px"></div>
-                </div>
             </div>
 
             <!-- Compare -->
@@ -345,6 +371,14 @@
         </div>
     </div>
 
+<!-- Tank Detail Modal -->
+<div id="tankModal" class="modal-overlay" onclick="if(event.target===this)closeTankModal()">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeTankModal()">✕</button>
+        <div id="tankModalContent"></div>
+    </div>
+</div>
+
 <script>
 // ==================== i18n ====================
 const LANG = {
@@ -352,7 +386,7 @@ const LANG = {
         subtitle:"World of Tanks Blitz — Статистика гравця",
         searchPlaceholder:"Введіть нікнейм...",searchBtn:"Пошук",
         savedProfiles:"Збережені профілі:",noProfiles:"Немає збережених профілів",
-        tabOverview:"Загальна",tabTanks:"Танки",tabSession:"Сесія",tabHelp:"Довідка",
+        tabOverview:"Загальна",tabTanks:"Танки",tabSession:"Сесія",tabHelp:"Довідка",tabOlen:"Оленімер",olenScan:"Сканувати екран",olenClear:"Очистити",olenManual:"Завантажити",olenLoading:"Сканування...",olenNoPlayers:"Гравців не знайдено",
         battles:"Бої",winrate:"Вінрейт",avgDmg:"Сер. шкода",avgFrags:"Сер. фраги",
         survival:"Виживання",accuracy:"Влучність",maxXP:"Макс. досвід",maxFrags:"Макс. фраги",
         winsFor1Pct:"до +1%",winsToWhole:"до цілого",
@@ -380,18 +414,33 @@ const LANG = {
         HT:"ВТ",MT:"СТ",LT:"ЛТ",TD:"ПТ-САУ",
         save:"Зберегти",remove:"Видалити",
         exportBtn:"Експорт",importBtn:"Імпорт",importSuccess:"Дані імпортовано!",importError:"Помилка імпорту",
+        tabMaps:"Карти",tabReplay:"Реплей",
+        replayDropTitle:"Перетягни .wotbreplay сюди або натисни",replayDropHint:"Підтримуються реплеї WoT Blitz",
+        replayListTitle:"Останні реплеї (авто)",replayListEmpty:"Реплеїв не знайдено. Переконайтеся що папка replays існує.",
+        replayTeam1:"Команда 1",replayTeam2:"Команда 2",replayYou:"ти",
+        replayDuration:"Тривалість",replayWinner:"Переможець",replayDraw:"Нічия",
+        replayAlive:"живий",replayDead:"знищений",
+        replayParseError:"Не вдалося прочитати реплей",
+        mapsTitle:"Статистика по картах",mapsRecent:"Останні бої",
+        mapsMap:"Карта",mapsBattles:"Бої",mapsWins:"Перемоги",mapsWR:"Вінрейт",
+        mapsResultWin:"Перемога",mapsResultLoss:"Поразка",mapsResultDraw:"Нічия",mapsResultUnknown:"—",
+        mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
+        sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
+        sessVsAvg:"vs середнє",mapsTrend:"Динаміка боїв",mapsStreakBest:"Краща серія",mapsStreakWorst:"Серія поразок",mapsBestHour:"Найкращий час",mapsCurrentStreak:"Поточна серія",
+        tankDetails:"Деталі танку",cacheRefresh:"оновити",
         helpTitle:"Як користуватися CL-Stats",
         helpContent:`<h4>🔍 Пошук гравця</h4>
-<p>Введіть нікнейм у поле пошуку та натисніть «Пошук». Оберіть гравця зі списку результатів. Нікнейм зберігається автоматично — при наступному відкритті статистика завантажиться сама.</p>
+<p>Введіть нікнейм у поле пошуку та натисніть «Пошук». Оберіть гравця зі списку результатів. Нікнейм зберігається автоматично. Дані кешуються на 15 хвилин.</p>
 
 <h4>⭐ Збережені профілі</h4>
 <p>Натисніть зірочку (★) поруч з ніком у результатах пошуку, щоб зберегти профіль. Збережені профілі відображаються під пошуком — один клік і статистика завантажується. Щоб видалити — натисніть × на профілі.</p>
 
 <h4>📊 Вкладка «Загальна»</h4>
-<p>Загальна статистика акаунту: бої, вінрейт, середня шкода, фраги, виживання, влучність та макс. фраги. Поле «Боїв до» показує два значення: скільки перемог підряд потрібно до наступного цілого відсотка та до +1% вінрейту. Графіки: розподіл боїв, типи танків, нації та рівні.</p>
+<p>Загальна статистика акаунту: бої, вінрейт, середня шкода, фраги, виживання, влучність та макс. фраги. Поле «Боїв до» показує скільки перемог потрібно до наступного цілого відсотка та до +1% вінрейту. Графіки: розподіл боїв, типи танків, нації та рівні.</p>
 
 <h4>🔫 Вкладка «Танки»</h4>
-<p>Детальна статистика по кожному танку. Фільтри за рівнем, типом та пошук за назвою. Сортування — натисніть на заголовок стовпця (▲/▼). Чекбокс «Сховати невідомі танки» приховує танки, яких немає в енциклопедії. Поле «Боїв до +1%» показує скільки перемог потрібно для підвищення вінрейту на цьому танку.</p>
+<p>Детальна статистика по кожному танку. Фільтри за рівнем, типом та пошук за назвою. Сортування — натисніть на заголовок стовпця (▲/▼).</p>
+<p><b>Деталі танку:</b> натисніть на будь-який рядок у таблиці — відкриється вікно з повною статистикою танку та його історією по сесіях.</p>
 
 <h4>🎮 Вкладка «Сесія»</h4>
 <p>Відстежуйте результати за ігрову сесію:</p>
@@ -400,41 +449,36 @@ const LANG = {
 <li>Зіграйте кілька боїв</li>
 <li>Натисніть <b>«Оновити всі»</b> — побачите статистику за цю сесію</li>
 </ol>
-<p>Можна мати декілька сесій одночасно. Сесії автоматично групуються по акаунтах — порядок груп можна змінювати кнопками ▲/▼. Перетягуйте сесії за іконку ☰ щоб змінити порядок всередині групи. Кнопки керування:</p>
-<ol>
-<li><b>«Скинути»</b> — почати сесію заново (зберігає назву, скидає дані)</li>
-<li><b>«В архів»</b> — зберегти сесію в архів для історії</li>
-<li><b>«Видалити»</b> — видалити сесію назавжди</li>
-</ol>
-<p><b>Автооновлення:</b> увімкніть чекбокс «Автооновлення» — сесії оновлюватимуться автоматично по таймеру (1/3/5/10 хв) та при поверненні на вкладку браузера після гри.</p>
-<p>Чекбокс «Розгорнути танки» тримає таблиці танків відкритими при оновленні.</p>
+<p>Можна мати декілька сесій одночасно. Сесії автоматично групуються по акаунтах — порядок груп можна змінювати кнопками ▲/▼. Перетягуйте сесії за іконку ☰ щоб змінити порядок всередині групи.</p>
+<p><b>VS СЕРЕДНЄ:</b> показує наскільки ваш вінрейт за сесію відрізняється від вашого ж загального вінрейту на цих танках. Позитивне — граєте краще за свою норму.</p>
+<p><b>Кращий/Гірший танк:</b> натисніть на картку — відкриється повний рейтинг всіх танків сесії.</p>
 
 <h4>📦 Архів сесій</h4>
 <p>Архів зберігає завершені сесії. Кожну архівну сесію можна повернути назад або видалити. Архів також використовується для розрахунку рейтингу «За останній час».</p>
 
 <h4>🏆 Вкладка «Рейтинг»</h4>
-<p>Рейтинг ефективності танків на основі формули: вінрейт, середня шкода, фраги та виживання. Фільтри за рівнем та типом. Чекбокс «За останній час» рахує рейтинг тільки по боях із сесій та архіву — корисно для оцінки поточної форми.</p>
+<p>Рейтинг ефективності танків на основі формули: вінрейт, середня шкода, фраги та виживання. Фільтри за рівнем та типом. Чекбокс «За останній час» рахує рейтинг тільки по боях із сесій та архіву.</p>
 
 <h4>⚔️ Вкладка «Порівняння»</h4>
-<p>Порівняння двох гравців: введіть ніки та натисніть «Порівняти». Також можна порівняти конкретний танк — введіть назву у поле нижче. Кращий показник підсвічується зеленим.</p>
+<p>Порівняння двох гравців: введіть ніки та натисніть «Порівняти». Також можна порівняти конкретний танк. Кращий показник підсвічується зеленим.</p>
 
 <h4>💾 Експорт / Імпорт</h4>
-<p>Кнопка «Експорт» зберігає всі ваші дані (профілі, сесії, налаштування) у JSON-файл. «Імпорт» — завантажує дані з файлу. Це дозволяє перенести дані на інший пристрій.</p>
+<p>Кнопка «Експорт» зберігає всі ваші дані (профілі, сесії, налаштування) у JSON-файл. «Імпорт» — завантажує дані з файлу для перенесення на інший пристрій.</p>
 
 <h4>🎨 Тема та мова</h4>
-<p>Кнопка ☾/☀ перемикає темну/світлу тему. Список мов — UA, RU, EN, UZ. Всі налаштування зберігаються автоматично. Активна вкладка також запам'ятовується.</p>
+<p>Кнопка ☾/☀ перемикає темну/світлу тему. Список мов — UA, RU, EN, UZ. Всі налаштування зберігаються автоматично.</p>
 
 <h4>📱 Встановлення як додаток</h4>
 <p>На телефоні: відкрийте сторінку → меню браузера → «Додати на головний екран». На ПК (Chrome): меню → «Встановити CL-Stats». Додаток працюватиме у власному вікні без адресного рядка.</p>
 
 <hr style="border-color:var(--brd);margin:15px 0">
-<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.0 — by Clark</p>`
+<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.2 — by Clark</p>`
     },
     ru: {
         subtitle:"World of Tanks Blitz — Статистика игрока",
         searchPlaceholder:"Введите никнейм...",searchBtn:"Поиск",
         savedProfiles:"Сохранённые профили:",noProfiles:"Нет сохранённых профилей",
-        tabOverview:"Общая",tabTanks:"Танки",tabSession:"Сессия",tabHelp:"Справка",
+        tabOverview:"Общая",tabTanks:"Танки",tabSession:"Сессия",tabHelp:"Справка",tabOlen:"Оленимер",olenScan:"Сканировать экран",olenClear:"Очистить",olenManual:"Загрузить",olenLoading:"Сканирование...",olenNoPlayers:"Игроки не найдены",
         battles:"Бои",winrate:"Винрейт",avgDmg:"Ср. урон",avgFrags:"Ср. фраги",
         survival:"Выживание",accuracy:"Точность",maxXP:"Макс. опыт",maxFrags:"Макс. фраги",
         winsFor1Pct:"до +1%",winsToWhole:"до целого",
@@ -462,45 +506,71 @@ const LANG = {
         HT:"ТТ",MT:"СТ",LT:"ЛТ",TD:"ПТ-САУ",
         save:"Сохранить",remove:"Удалить",
         exportBtn:"Экспорт",importBtn:"Импорт",importSuccess:"Данные импортированы!",importError:"Ошибка импорта",
+        tabMaps:"Карты",tabReplay:"Реплей",
+        replayDropTitle:"Перетащи .wotbreplay сюда или нажми",replayDropHint:"Поддерживаются реплеи WoT Blitz",
+        replayListTitle:"Последние реплеи (авто)",replayListEmpty:"Реплеи не найдены. Убедитесь что папка replays существует.",
+        replayTeam1:"Команда 1",replayTeam2:"Команда 2",replayYou:"ты",
+        replayDuration:"Длительность",replayWinner:"Победитель",replayDraw:"Ничья",
+        replayAlive:"жив",replayDead:"уничтожен",
+        replayParseError:"Не удалось прочитать реплей",
+        mapsTitle:"Статистика по картам",mapsRecent:"Последние бои",
+        mapsMap:"Карта",mapsBattles:"Боёв",mapsWins:"Победы",mapsWR:"Винрейт",
+        mapsResultWin:"Победа",mapsResultLoss:"Поражение",mapsResultDraw:"Ничья",mapsResultUnknown:"—",
+        mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
+        sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
+        sessVsAvg:"vs среднее",mapsTrend:"Динамика боёв",mapsStreakBest:"Лучшая серия",mapsStreakWorst:"Серия поражений",mapsBestHour:"Лучшее время",mapsCurrentStreak:"Текущая серия",
+        tankDetails:"Детали танка",cacheRefresh:"обновить",
         helpTitle:"Как пользоваться CL-Stats",
         helpContent:`<h4>🔍 Поиск игрока</h4>
-<p>Введите никнейм в поле поиска и нажмите «Поиск». Выберите игрока из списка. Никнейм сохраняется автоматически — при следующем открытии статистика загрузится сама.</p>
+<p>Введите никнейм в поле поиска и нажмите «Поиск». Выберите игрока из списка. Никнейм сохраняется автоматически. Данные кешируются на 15 минут.</p>
 
 <h4>⭐ Сохранённые профили</h4>
-<p>Нажмите звёздочку (★) рядом с ником в результатах поиска, чтобы сохранить профиль. Сохранённые профили отображаются под поиском — один клик и статистика загружается. Для удаления нажмите × на профиле.</p>
+<p>Нажмите звёздочку (★) рядом с ником в результатах поиска. Сохранённые профили отображаются под поиском — один клик и статистика загружается. Для удаления нажмите × на профиле.</p>
 
 <h4>📊 Вкладка «Общая»</h4>
-<p>Показывает общую статистику аккаунта: бои, винрейт, средний урон, фраги, выживание, точность, макс. опыт и макс. фрагов. Графики показывают распределение побед/поражений и типы танков.</p>
+<p>Общая статистика аккаунта: бои, винрейт, средний урон, фраги, выживание, точность, макс. опыт и макс. фрагов. Графики: распределение боёв, типы танков, нации и уровни.</p>
 
 <h4>🔫 Вкладка «Танки»</h4>
-<p>Таблица с детальной статистикой по каждому танку. Фильтры по уровню и типу. Сортировка — клик по заголовку столбца (▲/▼). Чекбокс «Скрыть удалённые» прячет танки, которых больше нет в игре.</p>
+<p>Детальная статистика по каждому танку. Фильтры по уровню и типу. Сортировка — клик по заголовку столбца (▲/▼).</p>
+<p><b>Детали танка:</b> нажмите на любую строку — откроется окно с полной статистикой танка и историей по сессиям.</p>
 
 <h4>🎮 Вкладка «Сессия»</h4>
-<p>Позволяет отслеживать результаты за игровую сессию:</p>
+<p>Отслеживание результатов за игровую сессию:</p>
 <ol>
 <li>Нажмите <b>«Новая сессия»</b> перед игрой (можно указать название)</li>
 <li>Сыграйте несколько боёв</li>
-<li>Нажмите <b>«Обновить»</b> — увидите статистику именно за эту сессию</li>
+<li>Нажмите <b>«Обновить все»</b> — увидите статистику за эту сессию</li>
 </ol>
 <p>Можно иметь несколько сессий одновременно. Перетаскивайте сессии за иконку ☰ для изменения порядка.</p>
+<p><b>VS СРЕДНЕЕ:</b> показывает насколько ваш винрейт за сессию отличается от вашего же общего винрейта на этих танках. Положительное — играете лучше нормы.</p>
+<p><b>Лучший/Худший танк:</b> нажмите на карточку — откроется полный рейтинг всех танков сессии.</p>
+
+<h4>📦 Архив сессий</h4>
+<p>Архив хранит завершённые сессии. Каждую можно восстановить или удалить. Используется для расчёта рейтинга «За последнее время».</p>
+
+<h4>🏆 Вкладка «Рейтинг»</h4>
+<p>Рейтинг эффективности танков по формуле: винрейт, средний урон, фраги и выживание. Фильтры по уровню и типу.</p>
+
+<h4>⚔️ Вкладка «Сравнение»</h4>
+<p>Сравнение двух игроков: введите ники и нажмите «Сравнить». Лучший показатель подсвечивается зелёным.</p>
 
 <h4>💾 Экспорт / Импорт</h4>
-<p>Кнопка «Экспорт» сохраняет все данные (профили, сессии, настройки) в JSON-файл. «Импорт» — загружает данные из файла для переноса на другое устройство.</p>
+<p>«Экспорт» сохраняет все данные в JSON-файл. «Импорт» — загружает данные для переноса на другое устройство.</p>
 
 <h4>🎨 Тема и язык</h4>
-<p>Кнопка ☾/☀ переключает тёмную/светлую тему. Список языков — UA, RU, EN, UZ. Все настройки сохраняются автоматически.</p>
+<p>Кнопка ☾/☀ переключает тёмную/светлую тему. Языки — UA, RU, EN, UZ. Все настройки сохраняются автоматически.</p>
 
 <h4>📱 Установка как приложение</h4>
 <p>На телефоне: откройте страницу → меню браузера → «Добавить на главный экран». На ПК (Chrome): меню → «Установить CL-Stats».</p>
 
 <hr style="border-color:var(--brd);margin:15px 0">
-<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.2 — by Clark</p>`
     },
     en: {
         subtitle:"World of Tanks Blitz — Player Statistics",
         searchPlaceholder:"Enter nickname...",searchBtn:"Search",
         savedProfiles:"Saved profiles:",noProfiles:"No saved profiles",
-        tabOverview:"Overview",tabTanks:"Tanks",tabSession:"Session",tabHelp:"Help",
+        tabOverview:"Overview",tabTanks:"Tanks",tabSession:"Session",tabHelp:"Help",tabOlen:"Olenimeter",olenScan:"Scan Screen",olenClear:"Clear",olenManual:"Load",olenLoading:"Scanning...",olenNoPlayers:"No players found",
         battles:"Battles",winrate:"Win Rate",avgDmg:"Avg Damage",avgFrags:"Avg Frags",
         survival:"Survival",accuracy:"Accuracy",maxXP:"Max XP",maxFrags:"Max Frags",
         winsFor1Pct:"to +1%",winsToWhole:"to whole",
@@ -528,45 +598,71 @@ const LANG = {
         HT:"HT",MT:"MT",LT:"LT",TD:"TD",
         save:"Save",remove:"Remove",
         exportBtn:"Export",importBtn:"Import",importSuccess:"Data imported!",importError:"Import error",
+        tabMaps:"Maps",tabReplay:"Replay",
+        replayDropTitle:"Drag .wotbreplay here or click",replayDropHint:"WoT Blitz replays supported",
+        replayListTitle:"Recent replays (auto)",replayListEmpty:"No replays found. Make sure the replays folder exists.",
+        replayTeam1:"Team 1",replayTeam2:"Team 2",replayYou:"you",
+        replayDuration:"Duration",replayWinner:"Winner",replayDraw:"Draw",
+        replayAlive:"alive",replayDead:"destroyed",
+        replayParseError:"Could not read replay",
+        mapsTitle:"Map Statistics",mapsRecent:"Recent Battles",
+        mapsMap:"Map",mapsBattles:"Battles",mapsWins:"Wins",mapsWR:"Win Rate",
+        mapsResultWin:"Victory",mapsResultLoss:"Defeat",mapsResultDraw:"Draw",mapsResultUnknown:"—",
+        mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
+        sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
+        sessVsAvg:"vs average",mapsTrend:"Battle Trend",mapsStreakBest:"Best Streak",mapsStreakWorst:"Loss Streak",mapsBestHour:"Best Hour",mapsCurrentStreak:"Current Streak",
+        tankDetails:"Tank Details",cacheRefresh:"refresh",
         helpTitle:"How to use CL-Stats",
         helpContent:`<h4>🔍 Player Search</h4>
-<p>Enter a nickname in the search field and press "Search". Select a player from the results. The nickname is saved automatically — next time the stats will load on its own.</p>
+<p>Enter a nickname in the search field and press "Search". Select a player from the results. The nickname is saved automatically. Stats are cached for 15 minutes.</p>
 
 <h4>⭐ Saved Profiles</h4>
 <p>Click the star (★) next to a nickname in search results to save the profile. Saved profiles appear below the search bar — one click to load stats. Click × to remove.</p>
 
 <h4>📊 Overview Tab</h4>
-<p>Shows overall account stats: battles, win rate, avg damage, frags, survival, accuracy, max XP and max frags. Charts show win/loss distribution and tank types.</p>
+<p>Overall account stats: battles, win rate, avg damage, frags, survival, accuracy, max XP and max frags. Charts show battle distribution, tank types, nations and tiers.</p>
 
 <h4>🔫 Tanks Tab</h4>
-<p>Detailed per-tank statistics table. Filter by tier and type. Sort by clicking column headers (▲/▼). "Hide removed" checkbox hides tanks no longer in the game.</p>
+<p>Detailed per-tank statistics table. Filter by tier and type. Sort by clicking column headers (▲/▼).</p>
+<p><b>Tank Details:</b> click any row to open a window with full tank stats and session history.</p>
 
 <h4>🎮 Session Tab</h4>
 <p>Track results for a gaming session:</p>
 <ol>
 <li>Press <b>"New Session"</b> before playing (you can set a name)</li>
 <li>Play some battles</li>
-<li>Press <b>"Refresh"</b> — see stats for that session only</li>
+<li>Press <b>"Refresh All"</b> — see stats for that session only</li>
 </ol>
 <p>You can have multiple sessions at once. Drag sessions by the ☰ icon to reorder.</p>
+<p><b>VS Average:</b> shows how your session win rate compares to your all-time win rate on those same tanks. Positive means you're playing above your personal average.</p>
+<p><b>Best/Worst Tank:</b> click the card to open a full ranked list of all session tanks.</p>
+
+<h4>📦 Session Archive</h4>
+<p>The archive stores completed sessions. Each can be restored or deleted. Also used for "Recent only" rating calculation.</p>
+
+<h4>🏆 Rating Tab</h4>
+<p>Tank efficiency rating based on win rate, avg damage, frags and survival. Filter by tier and type.</p>
+
+<h4>⚔️ Compare Tab</h4>
+<p>Compare two players: enter nicknames and press "Compare". The better stat is highlighted in green.</p>
 
 <h4>💾 Export / Import</h4>
-<p>"Export" saves all your data (profiles, sessions, settings) to a JSON file. "Import" loads data from a file to transfer between devices.</p>
+<p>"Export" saves all your data to a JSON file. "Import" loads data to transfer between devices.</p>
 
 <h4>🎨 Theme & Language</h4>
-<p>The ☾/☀ button toggles dark/light theme. Language selector: UA, RU, EN, UZ. All settings are saved automatically.</p>
+<p>The ☾/☀ button toggles dark/light theme. Languages: UA, RU, EN, UZ. All settings are saved automatically.</p>
 
 <h4>📱 Install as App</h4>
 <p>On phone: open the page → browser menu → "Add to Home Screen". On PC (Chrome): menu → "Install CL-Stats".</p>
 
 <hr style="border-color:var(--brd);margin:15px 0">
-<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.2 — by Clark</p>`
     },
     uz: {
         subtitle:"World of Tanks Blitz — O'yinchi statistikasi",
         searchPlaceholder:"Nikneym kiriting...",searchBtn:"Qidirish",
         savedProfiles:"Saqlangan profillar:",noProfiles:"Saqlangan profillar yo'q",
-        tabOverview:"Umumiy",tabTanks:"Tanklar",tabSession:"Sessiya",tabHelp:"Yordam",
+        tabOverview:"Umumiy",tabTanks:"Tanklar",tabSession:"Sessiya",tabHelp:"Yordam",tabOlen:"Olenimetr",olenScan:"Ekranni skanerlash",olenClear:"Tozalash",olenManual:"Yuklash",olenLoading:"Skanerlash...",olenNoPlayers:"O'yinchilar topilmadi",
         battles:"Janglar",winrate:"G'alaba %",avgDmg:"O'rt. zarar",avgFrags:"O'rt. fraglar",
         survival:"Omon qolish",accuracy:"Aniqlik",maxXP:"Maks. tajriba",maxFrags:"Maks. fraglar",
         winsFor1Pct:"+1% uchun",winsToWhole:"butun uchun",
@@ -594,27 +690,44 @@ const LANG = {
         HT:"OT",MT:"O'T",LT:"YT",TD:"PT-SAU",
         save:"Saqlash",remove:"O'chirish",
         exportBtn:"Eksport",importBtn:"Import",importSuccess:"Ma'lumotlar import qilindi!",importError:"Import xatosi",
+        tabMaps:"Xaritalar",tabReplay:"Replay",
+        replayDropTitle:".wotbreplay ni bu yerga tashlang yoki bosing",replayDropHint:"WoT Blitz replaylari qo'llab-quvvatlanadi",
+        replayListTitle:"Oxirgi replaylar (avto)",replayListEmpty:"Replaylar topilmadi.",
+        replayTeam1:"1-jamoa",replayTeam2:"2-jamoa",replayYou:"sen",
+        replayDuration:"Davomiyligi",replayWinner:"G'olib",replayDraw:"Durang",
+        replayAlive:"tirik",replayDead:"yo'q qilindi",
+        replayParseError:"Replayni o'qib bo'lmadi",
+        mapsTitle:"Xarita statistikasi",mapsRecent:"Oxirgi janglar",
+        mapsMap:"Xarita",mapsBattles:"Janglar",mapsWins:"G'alabalar",mapsWR:"G'alaba %",
+        mapsResultWin:"G'alaba",mapsResultLoss:"Mag'lubiyat",mapsResultDraw:"Durang",mapsResultUnknown:"—",
+        mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
+        sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
+        sessVsAvg:"vs o'rtacha",mapsTrend:"Janglar dinamikasi",mapsStreakBest:"Eng yaxshi seriya",mapsStreakWorst:"Mag'lubiyat seriyasi",mapsBestHour:"Eng yaxshi vaqt",mapsCurrentStreak:"Joriy seriya",
+        tankDetails:"Tank tafsilotlari",cacheRefresh:"yangilash",
         helpTitle:"CL-Stats dan qanday foydalanish",
         helpContent:`<h4>🔍 O'yinchini qidirish</h4>
-<p>Qidiruv maydoniga nikneym kiriting va "Qidirish" tugmasini bosing. Ro'yxatdan o'yinchini tanlang. Nikneym avtomatik saqlanadi — keyingi safar statistika o'zi yuklanadi.</p>
+<p>Qidiruv maydoniga nikneym kiriting va "Qidirish" tugmasini bosing. Ro'yxatdan o'yinchini tanlang. Nikneym avtomatik saqlanadi. Ma'lumotlar 15 daqiqa keshlanadi.</p>
 
 <h4>⭐ Saqlangan profillar</h4>
 <p>Qidiruv natijalarida nikneym yonidagi yulduzchani (★) bosing. Saqlangan profillar qidiruv ostida ko'rinadi — bir bosish bilan statistika yuklanadi. O'chirish uchun × bosing.</p>
 
 <h4>📊 "Umumiy" bo'limi</h4>
-<p>Akkauntning umumiy statistikasini ko'rsatadi: janglar, g'alaba %, o'rtacha zarar, fraglar, omon qolish, aniqlik, maks. tajriba va maks. fraglar.</p>
+<p>Akkauntning umumiy statistikasi: janglar, g'alaba %, o'rtacha zarar, fraglar, omon qolish, aniqlik, maks. tajriba va maks. fraglar.</p>
 
 <h4>🔫 "Tanklar" bo'limi</h4>
 <p>Har bir tank bo'yicha batafsil statistika jadvali. Daraja va turga ko'ra filtr. Saralash — ustun sarlavhasini bosing (▲/▼).</p>
+<p><b>Tank tafsilotlari:</b> jadvalda istalgan qatorni bosing — to'liq statistika va sessiya tarixi ko'rinadi.</p>
 
 <h4>🎮 "Sessiya" bo'limi</h4>
 <p>O'yin sessiyasi natijalarini kuzatish:</p>
 <ol>
 <li>O'yin oldidan <b>"Yangi sessiya"</b> bosing</li>
 <li>Bir necha jang o'ynang</li>
-<li><b>"Yangilash"</b> bosing — faqat shu sessiya statistikasini ko'ring</li>
+<li><b>"Barchasini yangilash"</b> bosing — faqat shu sessiya statistikasini ko'ring</li>
 </ol>
 <p>Bir vaqtda bir nechta sessiya bo'lishi mumkin. ☰ belgisi orqali tartibni o'zgartiring.</p>
+<p><b>VS O'rtacha:</b> sessiya davomidagi g'alaba foizingizni shu tanklardagi umumiy g'alaba foizingiz bilan solishtiradi.</p>
+<p><b>Eng yaxshi/yomon tank:</b> kartochkani bosing — sessiya tanklarining to'liq reytingini ko'ring.</p>
 
 <h4>💾 Eksport / Import</h4>
 <p>"Eksport" barcha ma'lumotlarni JSON faylga saqlaydi. "Import" boshqa qurilmaga o'tkazish uchun fayldan yuklaydi.</p>
@@ -626,7 +739,7 @@ const LANG = {
 <p>Telefonda: sahifani oching → brauzer menyusi → "Bosh ekranga qo'shish". Kompyuterda (Chrome): menyu → "CL-Stats o'rnatish".</p>
 
 <hr style="border-color:var(--brd);margin:15px 0">
-<p style="color:var(--t2);font-size:.85rem">CL-Stats — by Clark | Clark's Friends Discord</p>`
+<p style="color:var(--t2);font-size:.85rem">CL-Stats v1.2 — by Clark</p>`
     }
 };
 
@@ -791,12 +904,41 @@ window.addEventListener("DOMContentLoaded", () => {
 
 $("langSelect").addEventListener("change", e => setLang(e.target.value));
 
+// ==================== API CACHE ====================
+function _cacheGet(k) {
+    try {
+        const raw = localStorage.getItem('clscache:' + k);
+        if (!raw) return null;
+        const {d, ts, maxAge} = JSON.parse(raw);
+        return Date.now() - ts < maxAge ? {data: d, ageMs: Date.now() - ts} : null;
+    } catch(_) { return null; }
+}
+function _cacheSet(k, d, maxAge) {
+    try { localStorage.setItem('clscache:' + k, JSON.stringify({d, ts: Date.now(), maxAge})); } catch(_) {}
+}
+function _cacheDel(prefix) {
+    // Delete all cache keys containing prefix
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('clscache:') && k.includes(prefix)) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+}
+
 // ==================== API ====================
-async function api(endpoint, params = {}) {
+async function api(endpoint, params = {}, cacheMs = 0) {
     params.application_id = API_ID;
     const qs = new URLSearchParams(params).toString();
+    const ckey = endpoint + ':' + qs;
+    if (cacheMs > 0) {
+        const hit = _cacheGet(ckey);
+        if (hit) return hit.data;
+    }
     const resp = await fetch(`${BASE}/${endpoint}/?${qs}`);
-    return resp.json();
+    const data = await resp.json();
+    if (cacheMs > 0 && data.status === 'ok') _cacheSet(ckey, data, cacheMs);
+    return data;
 }
 
 const TANK_NAMES = {
@@ -844,7 +986,7 @@ const TANK_NAMES = {
 
 async function getTankInfo() {
     if (Object.keys(tankInfoCache).length > 0) return tankInfoCache;
-    const data = await api("encyclopedia/vehicles", { fields: "name,tier,type,nation,is_premium,images.preview" });
+    const data = await api("encyclopedia/vehicles", { fields: "name,tier,type,nation,is_premium,images.preview" }, 86400000); // 24h cache
     if (data.status === "ok" && data.data) tankInfoCache = data.data;
     for (const [id, info] of Object.entries(TANK_NAMES)) {
         if (!tankInfoCache[id]) tankInfoCache[id] = info;
@@ -911,13 +1053,15 @@ async function loadPlayer(accountId, nickname) {
     resetStats();
 
     try {
+        const CACHE_15M = 900000; // 15 min
         const [playerData, tanksData, tankInfo] = await Promise.all([
-            api("account/info", { account_id: accountId }),
-            api("tanks/stats", { account_id: accountId }),
+            api("account/info", { account_id: accountId }, CACHE_15M),
+            api("tanks/stats", { account_id: accountId }, CACHE_15M),
             getTankInfo()
         ]);
 
         if (playerData.status === "ok") displayPlayerStats(playerData.data[String(accountId)]);
+
 
         if (tanksData.status === "ok") {
             let tanks = tanksData.data[String(accountId)] || [];
@@ -943,6 +1087,13 @@ function enrichTanks(tanks, tankInfo) {
         t.tank_image = (info.images || {}).preview || "";
         t.in_encyclopedia = !!info.name;
     });
+}
+
+function refreshPlayerData() {
+    if (!currentAccountId) return;
+    _cacheDel(String(currentAccountId));
+    const nick = $('playerName').textContent;
+    loadPlayer(currentAccountId, nick);
 }
 
 function resetStats() {
@@ -1097,6 +1248,9 @@ function getSortValue(tk, field) {
     }
 }
 
+let _displayedTanks = [];
+const _sessionScoredTanks = {};
+
 function displayTankTable(tanks) {
     const tbody = $("tankTableBody");
     let filtered = tanks.filter(tk => tk.all && tk.all.battles > 0);
@@ -1119,7 +1273,8 @@ function displayTankTable(tanks) {
         return sortDir === "desc" ? -cmp : cmp;
     });
 
-    tbody.innerHTML = filtered.map(tk => {
+    _displayedTanks = filtered;
+    tbody.innerHTML = filtered.map((tk, idx) => {
         const s = tk.all, b = s.battles || 0;
         const wr = b > 0 ? (s.wins / b * 100) : 0;
         const avgDmg = b > 0 ? Math.round(s.damage_dealt / b) : 0;
@@ -1127,7 +1282,7 @@ function displayTankTable(tanks) {
         const nc = tk.is_premium ? "premium" : "";
         const img = tk.tank_image ? `<img src="${tk.tank_image}" alt="" loading="lazy">` : "";
         const name = tk.tank_name || `#${tk.tank_id}`;
-        return `<tr>
+        return `<tr data-disp-idx="${idx}" style="cursor:pointer" title="${t('tankDetails')}">
             <td><div class="tank-name-cell">${img}<span class="${nc}">${name}</span></div></td>
             <td>${TIER_ROMAN[tk.tank_tier] || tk.tank_tier}</td>
             <td>${t(TYPE_KEY[tk.tank_type] || "") || tk.tank_type || "?"}</td>
@@ -1139,6 +1294,99 @@ function displayTankTable(tanks) {
             <td>${wr >= 99 ? "∞" : Math.ceil(b / (99 - wr))}</td>
         </tr>`;
     }).join("");
+
+    tbody.querySelectorAll("tr[data-disp-idx]").forEach(row => {
+        row.addEventListener("click", () => openTankModal(_displayedTanks[+row.dataset.dispIdx]));
+    });
+}
+
+// ==================== TANK DETAIL MODAL ====================
+function _miniStatCard(label, value, cls = '') {
+    return `<div style="background:var(--bg3);border:1px solid var(--brd);border-radius:6px;padding:8px;text-align:center">
+        <div class="stat-value ${cls}" style="font-size:.95rem">${value}</div>
+        <div class="stat-label">${label}</div>
+    </div>`;
+}
+
+function openTankModal(tk) {
+    if (!tk || !tk.all) return;
+    const s = tk.all, b = s.battles || 0;
+    const wr    = b > 0 ? (s.wins / b * 100) : 0;
+    const avgDmg = b > 0 ? Math.round(s.damage_dealt / b) : 0;
+    const avgFrags = b > 0 ? (s.frags / b).toFixed(2) : "0";
+    const surv  = b > 0 ? (s.survived_battles / b * 100).toFixed(1) : "0";
+    const acc   = s.shots > 0 ? (s.hits / s.shots * 100).toFixed(1) : "—";
+    const kd    = (b - (s.survived_battles||0)) > 0 ? ((s.frags||0) / (b - s.survived_battles)).toFixed(2) : "∞";
+    const nc    = tk.is_premium ? "color:var(--acc);font-weight:700" : "";
+    const img   = tk.tank_image ? `<img src="${tk.tank_image}" alt="" style="width:90px;height:auto;border-radius:4px;border:1px solid var(--brd)">` : "";
+    const typeLabel = t(TYPE_KEY[tk.tank_type] || "") || tk.tank_type || "?";
+    const tierLabel = TIER_ROMAN[tk.tank_tier] || "";
+
+    // Session history for this tank from all sessions + archive
+    const allSessHistory = [];
+    [...getSessions(), ...getArchive()].forEach(sess => {
+        (sess.diffs || []).forEach(d => {
+            if (d.tank_name === tk.tank_name && d.battles > 0) {
+                const swr = d.battles > 0 ? (d.wins / d.battles * 100) : 0;
+                allSessHistory.push({
+                    name: sess.name || "?",
+                    battles: d.battles, wins: d.wins,
+                    wr: swr,
+                    avgDmg: d.battles > 0 ? Math.round(d.damage_dealt / d.battles) : 0
+                });
+            }
+        });
+    });
+
+    const historyHtml = allSessHistory.length > 0 ? `
+        <div style="border-top:1px solid var(--brd);padding-top:12px;margin-top:12px">
+            <div style="font-size:.8rem;color:var(--t2);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em">${t("sessTanks")} (${allSessHistory.length})</div>
+            <div style="max-height:200px;overflow-y:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+                    <thead><tr>
+                        <th style="text-align:left;padding:4px 8px;color:var(--acc);font-weight:600;border-bottom:1px solid var(--brd)">${t("sessionDefault")}</th>
+                        <th style="padding:4px 8px;color:var(--acc);font-weight:600;border-bottom:1px solid var(--brd)">${t("sessBattles")}</th>
+                        <th style="padding:4px 8px;color:var(--acc);font-weight:600;border-bottom:1px solid var(--brd)">${t("sessWR")}</th>
+                        <th style="padding:4px 8px;color:var(--acc);font-weight:600;border-bottom:1px solid var(--brd)">${t("sessAvgDmg")}</th>
+                    </tr></thead>
+                    <tbody>${allSessHistory.slice(-20).reverse().map(h => `<tr style="border-bottom:1px solid var(--brd)22">
+                        <td style="padding:5px 8px;color:var(--t1)">${h.name}</td>
+                        <td style="padding:5px 8px;text-align:center">${h.battles}</td>
+                        <td style="padding:5px 8px;text-align:center" class="${getWrClass(h.wr)}">${h.wr.toFixed(1)}%</td>
+                        <td style="padding:5px 8px;text-align:center">${h.avgDmg.toLocaleString()}</td>
+                    </tr>`).join("")}</tbody>
+                </table>
+            </div>
+        </div>` : "";
+
+    $("tankModalContent").innerHTML = `
+        <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px">
+            ${img ? `<div style="text-align:center;flex-shrink:0">${img}<div style="font-size:.72rem;color:var(--t2);margin-top:4px">${tierLabel} · ${typeLabel}</div></div>` : ""}
+            <div style="flex:1;min-width:180px">
+                <div style="font-size:1.2rem;font-weight:700;margin-bottom:12px;${nc}">${tk.tank_name || "?"}</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                    ${_miniStatCard(t("battles"), b.toLocaleString())}
+                    ${_miniStatCard(t("winrate"), wr.toFixed(2) + "%", getWrClass(wr))}
+                    ${_miniStatCard(t("avgDmg"), avgDmg.toLocaleString())}
+                    ${_miniStatCard(t("avgFrags"), avgFrags)}
+                    ${_miniStatCard(t("survival"), surv + "%")}
+                    ${_miniStatCard(t("accuracy"), acc + (acc !== "—" ? "%" : ""))}
+                    ${_miniStatCard(t("maxXP"), (s.max_xp || 0).toLocaleString())}
+                    ${_miniStatCard(t("maxFrags"), s.max_frags || 0)}
+                    ${_miniStatCard("K/D", kd)}
+                    ${_miniStatCard(t("winsFor1Pct"), wr >= 99 ? "∞" : Math.ceil(b / (99 - wr)))}
+                </div>
+            </div>
+        </div>
+        ${historyHtml}`;
+
+    $("tankModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+
+function closeTankModal() {
+    $("tankModal").style.display = "none";
+    document.body.style.overflow = "";
 }
 
 // ==================== SESSIONS (MULTI) ====================
@@ -1220,7 +1468,9 @@ function renderSessions() {
                 <div class="session-stat-card"><div class="stat-value ${tb > 0 ? getWrClass(wr) : ''}">${tb > 0 ? wr.toFixed(1) + "%" : "—"}</div><div class="stat-label">${t("sessWR")}</div></div>
                 <div class="session-stat-card"><div class="stat-value">${tb > 0 ? avgDmg.toLocaleString() : "—"}</div><div class="stat-label">${t("sessAvgDmg")}</div></div>
                 <div class="session-stat-card"><div class="stat-value">${tb > 0 ? avgFrags : "—"}</div><div class="stat-label">${t("sessAvgFrags")}</div></div>
+                ${typeof s.sessPerf === 'number' ? `<div class="session-stat-card"><div class="stat-value" style="color:${s.sessPerf >= 0 ? '#7ecb54' : '#e74c3c'}">${s.sessPerf >= 0 ? '+' : ''}${s.sessPerf.toFixed(1)}%</div><div class="stat-label">${t("sessVsAvg")}</div></div>` : ''}
             </div>
+            ${renderBestWorstTank(diffs, i)}
             ${diffs.length > 0 ? `<details${autoExpand || expandedSet.has(String(i)) ? " open" : ""}><summary style="cursor:pointer;color:var(--t2);font-size:.85rem;margin-bottom:8px">${t("sessTanks")} (${diffs.length})</summary>
             <div class="table-wrap">
                 <table><thead><tr>
@@ -1362,6 +1612,7 @@ async function refreshSession(idx) {
             const newMaxFrags = tk.all.max_frags||0, oldMaxFrags = oa.max_frags||0;
             const newMaxXp = tk.all.max_xp||0, oldMaxXp = oa.max_xp||0;
             diffs.push({
+                tank_id: tk.tank_id,
                 tank_name: tk.tank_name, tank_tier: tk.tank_tier, tank_type: tk.tank_type,
                 tank_image: tk.tank_image, is_premium: tk.is_premium,
                 battles: bd, wins: (tk.all.wins||0) - (oa.wins||0),
@@ -1375,6 +1626,36 @@ async function refreshSession(idx) {
     });
 
     sessions[idx].diffs = diffs;
+
+    // ── Compute session vs player's average (sessPerf) ───────
+    // Positive = above player's average WR on those tanks
+    let perfNumer = 0, perfDenom = 0;
+    diffs.forEach(d => {
+        if (d.battles < 2 || !d.tank_id) return;
+        const old = oldMap[d.tank_id];
+        if (!old || !old.all) return;
+        const ob = old.all.battles || 0;
+        if (ob < 10) return;
+        const overallWR = old.all.wins / ob * 100;
+        if (overallWR < 3 || overallWR > 97) return;
+        const sessWR = d.wins / d.battles * 100;
+        const w = Math.min(d.battles, 10);
+        perfNumer += (sessWR - overallWR) * w;
+        perfDenom += w;
+    });
+    sessions[idx].sessPerf = perfDenom >= 4 ? Math.round(perfNumer / perfDenom * 10) / 10 : null;
+
+    // ── Store refresh snapshot for timeline ──────────────────
+    const tb = diffs.reduce((s, d) => s + d.battles, 0);
+    const tw = diffs.reduce((s, d) => s + d.wins, 0);
+    const td = diffs.reduce((s, d) => s + d.damage_dealt, 0);
+    if (!sessions[idx].refreshHistory) sessions[idx].refreshHistory = [];
+    const lastSnap = sessions[idx].refreshHistory.slice(-1)[0];
+    if (tb > 0 && (!lastSnap || lastSnap.battles !== tb)) {
+        sessions[idx].refreshHistory.push({ t: Date.now(), battles: tb, wins: tw, damage: td });
+        if (sessions[idx].refreshHistory.length > 50) sessions[idx].refreshHistory.shift();
+    }
+
     saveSessions(sessions);
     renderSessions();
 }
@@ -1691,6 +1972,25 @@ function importData(e) {
     e.target.value = "";
 }
 
+// ==================== TANKS SUB-TABS ====================
+function switchTanksTab(sub) {
+    const isList = sub === "list";
+    document.getElementById("tanksSubList").style.display   = isList ? "" : "none";
+    document.getElementById("tanksSubRating").style.display = isList ? "none" : "";
+
+    const listBtn   = document.getElementById("tankSubListBtn");
+    const ratingBtn = document.getElementById("tankSubRatingBtn");
+    if (listBtn && ratingBtn) {
+        listBtn.style.borderBottomColor   = isList ? "var(--acc)" : "transparent";
+        listBtn.style.color               = isList ? "var(--acc)" : "var(--t2)";
+        listBtn.style.fontWeight          = isList ? "600" : "400";
+        ratingBtn.style.borderBottomColor = isList ? "transparent" : "var(--acc)";
+        ratingBtn.style.color             = isList ? "var(--t2)" : "var(--acc)";
+        ratingBtn.style.fontWeight        = isList ? "400" : "600";
+    }
+    if (!isList) displayRating();
+}
+
 // ==================== RATING ====================
 function calcTankRating(tk) {
     const s = tk.all, b = s.battles || 0;
@@ -1902,10 +2202,103 @@ async function doCompareTank() {
     }
 }
 
+// ==================== SESSION BEST/WORST TANK ====================
+function renderBestWorstTank(diffs, sessIdx) {
+    const eligible = diffs.filter(d => d.battles >= 2);
+    if (eligible.length < 2) return "";
+
+    const scored = eligible.map(d => ({
+        ...d,
+        avgDmg: d.battles > 0 ? Math.round(d.damage_dealt / d.battles) : 0,
+        wr: d.battles > 0 ? d.wins / d.battles * 100 : 0,
+        score: d.battles > 0 ? (d.wins / d.battles * 1000 + d.damage_dealt / d.battles * 0.3 + d.frags / d.battles * 200) : 0
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    _sessionScoredTanks[sessIdx] = scored;
+    const best  = scored[0];
+    const worst = scored[scored.length - 1];
+
+    function miniCard(label, color, d, mode) {
+        const img = d.tank_image ? `<img src="${d.tank_image}" alt="" style="width:28px;height:auto;border-radius:2px;margin-right:6px;vertical-align:middle">` : "";
+        const nc  = d.is_premium ? "color:var(--acc);font-weight:600" : "";
+        return `<div onclick="openRankedModal(${sessIdx},'${mode}')" style="flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;cursor:pointer;transition:border-color .18s" onmouseenter="this.style.borderColor='var(--acc)'" onmouseleave="this.style.borderColor='var(--brd)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+                <span style="font-size:.75rem;color:${color};font-weight:600">${label}</span>
+                <span style="font-size:.7rem;color:var(--t2);opacity:.75">▶ всі ${scored.length}</span>
+            </div>
+            <div style="display:flex;align-items:center;margin-bottom:4px">${img}<span style="font-size:.82rem;${nc}">${d.tank_name || "?"}</span>
+                <span style="margin-left:auto;font-size:.75rem;color:var(--t2)">${TIER_ROMAN[d.tank_tier] || ""}</span>
+            </div>
+            <div style="font-size:.78rem;color:var(--t2);display:flex;gap:10px">
+                <span>${d.battles} ${t("sessBattles").toLowerCase()}</span>
+                <span class="${getWrClass(d.wr)}">${d.wr.toFixed(0)}%</span>
+                <span>${d.avgDmg.toLocaleString()} шк.</span>
+            </div>
+        </div>`;
+    }
+
+    return `<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        ${miniCard(t("sessBestTank"), "#7ecb54", best, "best")}
+        ${miniCard(t("sessWorstTank"), "#e74c3c", worst, "worst")}
+    </div>`;
+}
+
+function openRankedModal(sessIdx, mode) {
+    const scored = _sessionScoredTanks[sessIdx];
+    if (!scored) return;
+
+    const list = mode === "best" ? [...scored] : [...scored].reverse();
+    const titleColor = mode === "best" ? "#7ecb54" : "#e74c3c";
+    const titleLabel = mode === "best" ? t("sessBestTank") : t("sessWorstTank");
+    const rankColors = ["#f0c040","#b0b0b0","#c87533"];
+
+    const rows = list.map((d, idx) => {
+        const rank      = mode === "best" ? idx + 1 : scored.length - idx;
+        const rankStyle = idx < 3 ? `color:${rankColors[idx]};font-weight:700` : "color:var(--t2)";
+        const img       = d.tank_image ? `<img src="${d.tank_image}" alt="" style="width:34px;height:auto;border-radius:2px;vertical-align:middle">` : "";
+        const nc        = d.is_premium ? "color:var(--acc);font-weight:600" : "";
+        const avgFrags  = d.battles > 0 ? (d.frags / d.battles).toFixed(2) : "—";
+        return `<tr style="border-bottom:1px solid var(--brd)44">
+            <td style="padding:6px 8px;text-align:center;${rankStyle}">${rank}</td>
+            <td style="padding:6px 4px;text-align:center">${img}</td>
+            <td style="padding:6px 8px;${nc}">${d.tank_name || "?"}
+                <span style="color:var(--t2);font-size:.72rem;margin-left:4px">${TIER_ROMAN[d.tank_tier] || ""}</span>
+            </td>
+            <td style="padding:6px 8px;text-align:center">${d.battles}</td>
+            <td style="padding:6px 8px;text-align:center" class="${getWrClass(d.wr)}">${d.wr.toFixed(0)}%</td>
+            <td style="padding:6px 8px;text-align:center">${d.avgDmg.toLocaleString()}</td>
+            <td style="padding:6px 8px;text-align:center;color:var(--t2)">${avgFrags}</td>
+        </tr>`;
+    }).join("");
+
+    $("tankModalContent").innerHTML = `
+        <h3 style="color:${titleColor};margin:0 0 16px;font-size:1.05rem">${titleLabel} — всі танки сесії (${scored.length})</h3>
+        <div class="table-wrap" style="max-height:70vh;overflow-y:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.83rem">
+                <thead><tr style="position:sticky;top:0;background:var(--bg2)">
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600">#</th>
+                    <th></th>
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600;text-align:left">${t("thTank")}</th>
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600">${t("sessBattles")}</th>
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600">${t("sessWR")}</th>
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600">${t("sessAvgDmg")}</th>
+                    <th style="padding:6px 8px;color:var(--t2);font-weight:600">${t("sessAvgFrags")}</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+
+    $("tankModal").style.display = "block";
+    document.body.style.overflow = "hidden";
+}
+
+// ==================== SESSION TIMELINE ====================
+
 // ==================== SERVICE WORKER ====================
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
 }
+
 </script>
 </body>
 </html>
