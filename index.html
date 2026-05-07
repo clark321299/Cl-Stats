@@ -453,6 +453,8 @@ const LANG = {
 <li>Натисніть <b>«Оновити всі»</b> — побачите статистику за цю сесію</li>
 </ol>
 <p>Можна мати декілька сесій одночасно. Сесії автоматично групуються по акаунтах — порядок груп можна змінювати кнопками ▲/▼. Перетягуйте сесії за іконку ☰ щоб змінити порядок всередині групи.</p>
+<p><b>Автоскидання по сесіях:</b> кожна сесія має власне автоскидання (щодня / щотижня / щомісяця + час). Біля назви сесії відображається бейдж <b>AUTO ...</b>, якщо автоскидання увімкнене.</p>
+<p><b>Кнопка «A» біля олівця:</b> показує або ховає панель налаштувань автоскидання саме для цієї сесії. Тобто можна тримати картку компактною, а налаштування відкривати тільки коли потрібно. Після зміни розкладу сесія скинеться у наступний запланований момент, а не одразу.</p>
 <p><b>VS СЕРЕДНЄ:</b> показує наскільки ваш вінрейт за сесію відрізняється від вашого ж загального вінрейту на цих танках. Позитивне — граєте краще за свою норму.</p>
 <p><b>Кращий/Гірший танк:</b> натисніть на картку — відкриється повний рейтинг всіх танків сесії.</p>
 
@@ -548,6 +550,8 @@ const LANG = {
 <li>Нажмите <b>«Обновить все»</b> — увидите статистику за эту сессию</li>
 </ol>
 <p>Можно иметь несколько сессий одновременно. Перетаскивайте сессии за иконку ☰ для изменения порядка.</p>
+<p><b>Автосброс по сессиям:</b> у каждой сессии собственное расписание автосброса (ежедневно / еженедельно / ежемесячно + время). Если автосброс включён, рядом с названием сессии виден бейдж <b>AUTO ...</b>.</p>
+<p><b>Кнопка «A» рядом с карандашом:</b> показывает/скрывает панель настроек автосброса только для текущей сессии. Так карточка остаётся компактной, а настройки открываются по необходимости. После изменения расписания сброс выполнится в следующий запланированный момент, а не сразу.</p>
 <p><b>VS СРЕДНЕЕ:</b> показывает насколько ваш винрейт за сессию отличается от вашего же общего винрейта на этих танках. Положительное — играете лучше нормы.</p>
 <p><b>Лучший/Худший танк:</b> нажмите на карточку — откроется полный рейтинг всех танков сессии.</p>
 
@@ -643,6 +647,8 @@ const LANG = {
 <li>Press <b>"Refresh All"</b> — see stats for that session only</li>
 </ol>
 <p>You can have multiple sessions at once. Drag sessions by the ☰ icon to reorder.</p>
+<p><b>Per-session auto reset:</b> each session has its own auto-reset schedule (daily / weekly / monthly + time). When enabled, an <b>AUTO ...</b> badge is shown next to the session name.</p>
+<p><b>The "A" button near the pencil:</b> shows/hides the auto-reset settings panel for that specific session. This keeps cards compact and lets you open settings only when needed. After editing the schedule, reset runs at the next planned slot, not immediately.</p>
 <p><b>VS Average:</b> shows how your session win rate compares to your all-time win rate on those same tanks. Positive means you're playing above your personal average.</p>
 <p><b>Best/Worst Tank:</b> click the card to open a full ranked list of all session tanks.</p>
 
@@ -738,6 +744,8 @@ const LANG = {
 <li><b>"Barchasini yangilash"</b> bosing — faqat shu sessiya statistikasini ko'ring</li>
 </ol>
 <p>Bir vaqtda bir nechta sessiya bo'lishi mumkin. ☰ belgisi orqali tartibni o'zgartiring.</p>
+<p><b>Sessiya bo'yicha avto reset:</b> har bir sessiya uchun alohida jadval bor (har kuni / har hafta / har oy + vaqt). Yoqilganda sessiya nomi yonida <b>AUTO ...</b> belgisi ko'rinadi.</p>
+<p><b>Qalam yonidagi "A" tugmasi:</b> aynan shu sessiya uchun avto reset panelini ko'rsatadi/yashiradi. Bu kartani ixcham saqlaydi va sozlamalarni faqat kerak bo'lganda ochishga yordam beradi. Jadval o'zgartirilgandan keyin reset darhol emas, keyingi rejalangan vaqtda ishlaydi.</p>
 <p><b>VS O'rtacha:</b> sessiya davomidagi g'alaba foizingizni shu tanklardagi umumiy g'alaba foizingiz bilan solishtiradi.</p>
 <p><b>Eng yaxshi/yomon tank:</b> kartochkani bosing — sessiya tanklarining to'liq reytingini ko'ring.</p>
 
@@ -2216,6 +2224,56 @@ function getRecentTankData() {
     return Object.values(map);
 }
 
+let ratingSortField = "rating";
+let ratingSortDir = "desc";
+const RATING_SORT_LS_KEY = "clstats_rating_sort";
+
+function loadRatingSortPrefs() {
+    try {
+        const raw = localStorage.getItem(RATING_SORT_LS_KEY);
+        if (!raw) return;
+        const cfg = JSON.parse(raw);
+        const allowed = new Set(["name", "tier", "type", "battles", "winrate", "avg_dmg", "avg_frags", "rating"]);
+        if (cfg && allowed.has(cfg.field)) ratingSortField = cfg.field;
+        if (cfg && (cfg.dir === "asc" || cfg.dir === "desc")) ratingSortDir = cfg.dir;
+    } catch (e) {}
+}
+
+function saveRatingSortPrefs() {
+    try {
+        localStorage.setItem(RATING_SORT_LS_KEY, JSON.stringify({ field: ratingSortField, dir: ratingSortDir }));
+    } catch (e) {}
+}
+
+loadRatingSortPrefs();
+
+function setRatingSort(field) {
+    if (ratingSortField === field) {
+        ratingSortDir = ratingSortDir === "desc" ? "asc" : "desc";
+    } else {
+        ratingSortField = field;
+        ratingSortDir = "desc";
+    }
+    saveRatingSortPrefs();
+    displayRating();
+}
+
+function getRatingSortValue(tk, field) {
+    const s = tk.all || {};
+    const b = s.battles || 0;
+    switch (field) {
+        case "name": return (tk.tank_name || "").toLowerCase();
+        case "tier": return tk.tank_tier || 0;
+        case "type": return tk.tank_type || "";
+        case "battles": return b;
+        case "winrate": return b > 0 ? (s.wins || 0) / b : 0;
+        case "avg_dmg": return b > 0 ? (s.damage_dealt || 0) / b : 0;
+        case "avg_frags": return b > 0 ? (s.frags || 0) / b : 0;
+        case "rating":
+        default: return tk.rating || 0;
+    }
+}
+
 function displayRating() {
     const bestDiv = $("ratingBest"), worstDiv = $("ratingWorst");
     const isRecent = $("ratingRecent").checked;
@@ -2235,16 +2293,28 @@ function displayRating() {
     if (tierF) filtered = filtered.filter(tk => tk.tank_tier == tierF);
     if (typeF) filtered = filtered.filter(tk => tk.tank_type === typeF);
 
-    const rated = filtered
-        .map(tk => ({ ...tk, rating: calcTankRating(tk) }))
-        .sort((a, b) => b.rating - a.rating);
+    const rated = filtered.map(tk => ({ ...tk, rating: calcTankRating(tk) }));
+    rated.sort((a, b) => {
+        const va = getRatingSortValue(a, ratingSortField);
+        const vb = getRatingSortValue(b, ratingSortField);
+        if (typeof va === "string" || typeof vb === "string") {
+            const aa = String(va), bb = String(vb);
+            const cmp = aa.localeCompare(bb);
+            return ratingSortDir === "asc" ? cmp : -cmp;
+        }
+        return ratingSortDir === "asc" ? (va - vb) : (vb - va);
+    });
 
     function renderRatingTable(title, tanks, color) {
         if (tanks.length === 0) return `<p style="color:var(--t2)">—</p>`;
+        const hdr = (field, label) => {
+            const cls = ratingSortField === field ? (ratingSortDir === "asc" ? "sort-asc" : "sort-desc") : "";
+            return `<th class="sortable ${cls}" onclick="setRatingSort('${field}')">${label}</th>`;
+        };
         return `<h3 style="color:${color};margin-bottom:10px">${title}</h3>
         <div class="table-wrap"><table><thead><tr>
-            <th>#</th><th>${t("thTank")}</th><th>${t("thTier")}</th><th>${t("thType")}</th>
-            <th>${t("battles")}</th><th>${t("winrate")}</th><th>${t("avgDmg")}</th><th>${t("avgFrags")}</th><th>${t("ratingScore")}</th>
+            <th>#</th>${hdr("name", t("thTank"))}${hdr("tier", t("thTier"))}${hdr("type", t("thType"))}
+            ${hdr("battles", t("battles"))}${hdr("winrate", t("winrate"))}${hdr("avg_dmg", t("avgDmg"))}${hdr("avg_frags", t("avgFrags"))}${hdr("rating", t("ratingScore"))}
         </tr></thead><tbody>${tanks.map((tk, i) => {
             const s = tk.all, b = s.battles;
             const wr = (s.wins / b * 100).toFixed(1);
