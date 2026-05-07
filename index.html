@@ -1487,6 +1487,7 @@ function renderSessions() {
         const avgDmg = tb > 0 ? Math.round(td / tb) : 0;
         const avgFrags = tb > 0 ? (tf / tb).toFixed(2) : "0";
         const ar = _sessionAutoResetCfg(s);
+        const arUiOpen = !!s.autoResetUiOpen;
         const arLast = ar.lastRun ? new Date(ar.lastRun).toLocaleString() : t("sessAutoResetNever");
         const arNext = ar.enabled ? _nextRun(new Date(), ar).toLocaleString() : "—";
         const dowKeyMap = { 1: "dowMon", 2: "dowTue", 3: "dowWed", 4: "dowThu", 5: "dowFri", 6: "dowSat", 7: "dowSun" };
@@ -1510,12 +1511,13 @@ function renderSessions() {
                 </div>
                 <div style="display:flex;gap:6px">
                     <button class="btn btn-ghost btn-sm" onclick="renameSession(${i})">&#9998;</button>
+                    <button class="btn btn-ghost btn-sm" onclick="toggleSessionAutoResetPanel(${i})" title="${t("sessAutoResetEnable")}" style="font-weight:700">A</button>
                     <button class="btn btn-sm" style="background:var(--bg2);color:var(--t1);border:1px solid var(--brd)" onclick="resetSession(${i})">${t("sessReset")}</button>
                     <button class="btn btn-sm" style="background:var(--bg2);color:var(--t2);border:1px solid var(--brd)" onclick="archiveSession(${i})">${t("sessArchiveBtn")}</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteSession(${i})">${t("sessionStop")}</button>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 8px 0">
+            <div style="display:${arUiOpen ? "flex" : "none"};align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 8px 0">
                 <label style="display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--t2);cursor:pointer">
                     <input type="checkbox" data-ar-idx="${i}" data-ar-field="enabled"${ar.enabled ? " checked" : ""}>
                     <span>${t("sessAutoResetEnable")}</span>
@@ -1877,6 +1879,14 @@ function renameSession(idx) {
     const newName = prompt("", sessions[idx].name);
     if (newName === null || !newName.trim()) return;
     sessions[idx].name = newName.trim();
+    saveSessions(sessions);
+    renderSessions();
+}
+
+function toggleSessionAutoResetPanel(idx) {
+    const sessions = getSessions();
+    if (!sessions[idx]) return;
+    sessions[idx].autoResetUiOpen = !sessions[idx].autoResetUiOpen;
     saveSessions(sessions);
     renderSessions();
 }
