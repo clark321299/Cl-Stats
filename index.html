@@ -474,13 +474,15 @@ const LANG = {
         mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
         sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
         sessPrimary:"Основна (за весь час)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на акаунт — загальна статистика без порад.",
-        sessAdviceTitle:"Попередження",sessAdviceNote:"Лише слабкі танки. Тримається, поки не зіграєш ~20 б. на інших; після повернення — перегляд за 5+ б.",
+        sessAdviceTitle:"Попередження",sessAdviceNote:"При частій зміні танків — попередження по класу. Інакше — по танку; кулдаун ~20 б. на іншому класі/танках.",
         sessAdvicePrimarySkip:"Поради вимкнено — це основна сесія. Дивись Day/Week для підказок під час гри.",
         sessAdviceRecent:"З останнього оновлення (~{n} б.)",sessAdviceRecentWin:"За останні ~{n} боїв",sessAdviceNeedRefresh:"На цій сесії занадто багато боїв без знімків. Натисни «Оновити» ще раз після кількох нових боїв — тоді поради рахуватимуть лише останню гру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, шкода ~{dmgPct}% від норми {tier} — зміни танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабше за інші в вибірці (~{normWr}%). Зміни танк.",
         sessAdvHold:"{tank} ({battles} б.): WR {wr}% — зміни танк. Ще ~{left} б. на інших.",
         sessAdvClassSwitch:"{class} ({battles} б.): WR {wr}% — спробуй інший клас (напр. {altClass}: {altWr}%).",
+        sessAdvClassSameBad:"{class} ({tanks}, {battles} б.): WR {wr}% — кілька танків класу не йдуть, зміни клас.",
+        sessAdvClassHold:"{class} ({battles} б.): WR {wr}% — зміни клас. Ще ~{left} б. на іншому класі.",
         sessAdvSafe:"{tank}: низьке виживання ({surv}%) і шкода ({dmgPct}%) — зміни танк або грай обережніше.",
         sessAdvRisky:"{tank}: шкода ок ({dmgPct}%), але часто гинеш і WR {wr}% — ризиковано, зміни танк.",
         sessAdvSlight:"{tank} ({battles} б.): трохи слабше за інші — понаблюдай або зміни танк.",
@@ -586,13 +588,15 @@ const LANG = {
         mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
         sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
         sessPrimary:"Основная (за всё время)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на аккаунт — общая статистика без советов.",
-        sessAdviceTitle:"Предупреждения",sessAdviceNote:"Только слабые танки. Держится, пока не сыграешь ~20 б. на других; после возврата — пересмотр за 5+ б.",
+        sessAdviceTitle:"Предупреждения",sessAdviceNote:"При частой смене танков — по классу. Иначе — по танку; кулдаун ~20 б. на другом классе/танках.",
         sessAdvicePrimarySkip:"Советы отключены — основная сессия. Смотри Day/Week для подсказок во время игры.",
         sessAdviceRecent:"С последнего обновления (~{n} б.)",sessAdviceRecentWin:"За последние ~{n} боёв",sessAdviceNeedRefresh:"На этой сессии слишком много боёв без снимков. Нажми «Обновить» ещё раз после нескольких новых боёв — советы будут только за последнюю игру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, урон ~{dmgPct}% от нормы {tier} — смени танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабее других в выборке (~{normWr}%). Смени танк.",
         sessAdvHold:"{tank} ({battles} б.): WR {wr}% — смени танк. Ещё ~{left} б. на других.",
         sessAdvClassSwitch:"{class} ({battles} б.): WR {wr}% — попробуй другой класс (напр. {altClass}: {altWr}%).",
+        sessAdvClassSameBad:"{class} ({tanks}, {battles} б.): WR {wr}% — несколько танков класса не идут, смени класс.",
+        sessAdvClassHold:"{class} ({battles} б.): WR {wr}% — смени класс. Ещё ~{left} б. на другом классе.",
         sessAdvSafe:"{tank}: низкое выживание ({surv}%) и урон ({dmgPct}%) — смени танк или осторожнее.",
         sessAdvRisky:"{tank}: урон ок ({dmgPct}%), но часто погибаешь, WR {wr}% — смени танк.",
         sessAdvSlight:"{tank} ({battles} б.): чуть слабее других — понаблюдай или смени танк.",
@@ -698,13 +702,15 @@ const LANG = {
         mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
         sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
         sessPrimary:"Primary (all-time)",sessPrimaryBadge:"ALL",sessPrimaryHint:"One per account — lifetime stats, no tips.",
-        sessAdviceTitle:"Warnings",sessAdviceNote:"Underperforming tanks only. Stays until ~20 battles on others; 5+ on return to re-check.",
+        sessAdviceTitle:"Warnings",sessAdviceNote:"Frequent tank swaps → class warnings. Otherwise per-tank; ~20 bt cooldown on other class/tanks.",
         sessAdvicePrimarySkip:"Tips disabled — primary session. Use Day/Week for in-game hints.",
         sessAdviceRecent:"Since last refresh (~{n} bt.)",sessAdviceRecentWin:"Last ~{n} battles",sessAdviceNeedRefresh:"Too many battles without snapshots. Press Refresh again after a few new battles — tips will use recent play only.",
         sessAdvSwitch:"{tank} ({battles} bt): WR {wr}%, damage ~{dmgPct}% of tier {tier} norm — switch tank.",
         sessAdvSwitchSoft:"{tank} ({battles} bt): WR {wr}% — weaker than others in window (~{normWr}%). Switch tank.",
         sessAdvHold:"{tank} ({battles} bt): WR {wr}% — switch tank. ~{left} more on others first.",
         sessAdvClassSwitch:"{class} ({battles} bt): WR {wr}% — try another class (e.g. {altClass}: {altWr}%).",
+        sessAdvClassSameBad:"{class} ({tanks}, {battles} bt): WR {wr}% — multiple tanks in class struggling, switch class.",
+        sessAdvClassHold:"{class} ({battles} bt): WR {wr}% — switch class. ~{left} more on another class first.",
         sessAdvSafe:"{tank}: low survival ({surv}%) and damage ({dmgPct}%) — switch tank or play safer.",
         sessAdvRisky:"{tank}: damage ok ({dmgPct}%) but dying often, WR {wr}% — switch tank.",
         sessAdvSlight:"{tank} ({battles} bt): slightly weaker — watch or switch tank.",
@@ -810,13 +816,15 @@ const LANG = {
         mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
         sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
         sessPrimary:"Asosiy (butun vaqt)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Har hisobda bitta — umumiy stat, maslahatsiz.",
-        sessAdviceTitle:"Ogohlantirishlar",sessAdviceNote:"Faqat sust tanklar. Boshqa tanklarda ~20 janggacha saqlanadi; qaytganda 5+ j. qayta tekshiriladi.",
+        sessAdviceTitle:"Ogohlantirishlar",sessAdviceNote:"Tez-tez tank almashtirsang — klass bo'yicha. Aks holda tank; ~20 j. boshqa klass/tanklarda kutish.",
         sessAdvicePrimarySkip:"Maslahatlar o'chirilgan — asosiy sessiya. O'yin vaqtida Day/Week ga qarang.",
         sessAdviceRecent:"Oxirgi yangilashdan (~{n} j.)",sessAdviceRecentWin:"So'nggi ~{n} jang",sessAdviceNeedRefresh:"Juda ko'p jang, snapshot yo'q. Bir necha jangdan keyin yana «Yangilash» bosing — maslahatlar faqat so'nggi o'yin uchun.",
         sessAdvSwitch:"{tank} ({battles} j.): WR {wr}%, zarar ~{dmgPct}% {tier} normasidan — tankni almashtiring.",
         sessAdvSwitchSoft:"{tank} ({battles} j.): WR {wr}% — tanlovda boshqalardan past (~{normWr}%). Tankni almashtiring.",
         sessAdvHold:"{tank} ({battles} j.): WR {wr}% — tankni almashtiring. Yana ~{left} j. boshqalarda.",
         sessAdvClassSwitch:"{class} ({battles} j.): WR {wr}% — boshqa klass sinab ko'ring (mas. {altClass}: {altWr}%).",
+        sessAdvClassSameBad:"{class} ({tanks}, {battles} j.): WR {wr}% — klassdagi bir necha tank ketmayapti, klassni almashtiring.",
+        sessAdvClassHold:"{class} ({battles} j.): WR {wr}% — klassni almashtiring. Yana ~{left} j. boshqa klassda.",
         sessAdvSafe:"{tank}: omon qolish past ({surv}%) va zarar ({dmgPct}%) — tankni almashtiring.",
         sessAdvRisky:"{tank}: zarar ok ({dmgPct}%), lekin tez-tez o'lasan, WR {wr}% — tankni almashtiring.",
         sessAdvSlight:"{tank} ({battles} j.): biroz past — kuzating yoki tankni almashtiring.",
@@ -2321,6 +2329,7 @@ async function resetSession(idx, opts = {}) {
     sessions[idx].tanks = tanks;
     sessions[idx].diffs = [];
     sessions[idx].adviceBlocks = {};
+    sessions[idx].adviceClassBlocks = {};
     sessions[idx].refreshHistory = [];
     sessions[idx].startTime = new Date().toISOString();
     saveSessions(sessions);
@@ -3098,10 +3107,12 @@ function getRecentSessionDiffs(sess) {
     return { diffs: recent, window: recentTotal, totalNow, needRefresh: false };
 }
 
-function _filterAdviceTanks(recentDiffs, recentTotal) {
-    const minTankBattles = recentTotal > 50 ? 4 : 3;
+function _filterAdviceTanks(recentDiffs, recentTotal, playMode) {
+    if (playMode?.rotating) return [];
+    let minTankBattles = recentTotal > 50 ? 4 : 3;
+    if (playMode?.softRotate) minTankBattles = 5;
     const minShare = recentTotal > 30 ? 0.12 : 0.08;
-    return recentDiffs.filter(d => {
+    return (recentDiffs || []).filter(d => {
         if (d.battles < minTankBattles) return false;
         if (d.battles / recentTotal < minShare && d.battles < 5) return false;
         return true;
@@ -3110,6 +3121,112 @@ function _filterAdviceTanks(recentDiffs, recentTotal) {
 
 const ADVICE_COOLDOWN_OTHER = 20;
 const ADVICE_RETRY_TANK = 5;
+const ADVICE_RETRY_CLASS = 5;
+
+function _advicePlayMode(recentDiffs, recentTotal) {
+    const active = (recentDiffs || []).filter(d => (d.battles || 0) >= 1);
+    const tankCount = active.length;
+    const avgPerTank = tankCount > 0 ? recentTotal / tankCount : recentTotal;
+    const rotating = tankCount >= 3 && avgPerTank <= 4.5;
+    const softRotate = !rotating && tankCount >= 2 && avgPerTank <= 5;
+    return { rotating, softRotate, tankCount, avgPerTank };
+}
+
+function _classBattlesInSession(sess, classType) {
+    return (sess.diffs || [])
+        .filter(d => d.tank_type === classType)
+        .reduce((s, d) => s + (d.battles || 0), 0);
+}
+
+function _buildClassAdviceData(recentDiffs) {
+    const byClass = {};
+    for (const d of recentDiffs || []) {
+        if ((d.battles || 0) < 1) continue;
+        const cls = d.tank_type || "?";
+        if (!byClass[cls]) byClass[cls] = { tanks: [], battles: 0, wins: 0, damage: 0, tierW: 0, tierBattles: 0 };
+        byClass[cls].tanks.push(d);
+        byClass[cls].battles += d.battles;
+        byClass[cls].wins += d.wins;
+        byClass[cls].damage += d.damage_dealt;
+        const tn = _tierDmgNorm(d.tank_tier);
+        byClass[cls].tierW += tn * d.battles;
+        byClass[cls].tierBattles += d.battles;
+    }
+    return Object.entries(byClass).map(([cls, v]) => {
+        const wr = v.battles > 0 ? v.wins / v.battles * 100 : 0;
+        const avgDmg = v.battles > 0 ? v.damage / v.battles : 0;
+        const tierNorm = v.tierBattles > 0 ? v.tierW / v.tierBattles : 2000;
+        const dmgRatio = tierNorm > 0 ? avgDmg / tierNorm : 1;
+        const activeTanks = v.tanks.filter(t => t.battles >= 2);
+        const tankNames = activeTanks.map(t => t.tank_name).slice(0, 3).join(", ") || v.tanks[0]?.tank_name || "?";
+        return { cls, battles: v.battles, wr, avgDmg, dmgRatio, activeTanks: activeTanks.length, tankNames, tanks: v.tanks };
+    }).sort((a, b) => a.wr - b.wr);
+}
+
+function _evalClassSameBad(data, playMode) {
+    if (!data || data.battles < 4) return null;
+    const minBattles = playMode.rotating ? 5 : 6;
+    const minTanks = playMode.rotating ? 2 : 2;
+    const wrCap = playMode.rotating ? 44 : 40;
+    const dmgCap = playMode.rotating ? 0.85 : 0.82;
+    if (data.activeTanks >= minTanks && data.battles >= minBattles && data.wr < wrCap && data.dmgRatio < dmgCap) {
+        return {
+            severity: data.wr < 34 ? "warn" : "tip",
+            key: "sessAdvClassSameBad",
+            score: 62 + (wrCap - data.wr),
+            vars: {
+                class: _adviceClassLabel(data.cls),
+                tanks: data.tankNames,
+                battles: String(data.battles),
+                wr: data.wr.toFixed(0),
+                left: String(ADVICE_COOLDOWN_OTHER)
+            }
+        };
+    }
+    if (data.battles >= 8 && data.wr < 36 && data.dmgRatio < 0.8) {
+        return {
+            severity: "tip",
+            key: "sessAdvClassSameBad",
+            score: 58 + (36 - data.wr),
+            vars: {
+                class: _adviceClassLabel(data.cls),
+                tanks: data.tankNames,
+                battles: String(data.battles),
+                wr: data.wr.toFixed(0),
+                left: String(ADVICE_COOLDOWN_OTHER)
+            }
+        };
+    }
+    return null;
+}
+
+function _evalClassSwitch(worst, best) {
+    if (!worst || !best || worst.cls === best.cls) return null;
+    if (worst.battles < 8 || best.battles < 6) return null;
+    if (worst.wr >= 36 || best.wr < worst.wr + 12) return null;
+    return {
+        severity: "tip",
+        key: "sessAdvClassSwitch",
+        score: 55 + (36 - worst.wr),
+        vars: {
+            class: _adviceClassLabel(worst.cls),
+            battles: String(worst.battles),
+            wr: worst.wr.toFixed(0),
+            altClass: _adviceClassLabel(best.cls),
+            altWr: best.wr.toFixed(0),
+            left: String(ADVICE_COOLDOWN_OTHER)
+        }
+    };
+}
+
+function _classBlockProgress(block, sess) {
+    const totalNow = _sessionTotalBattles(sess);
+    const classNow = _classBattlesInSession(sess, block.classType);
+    const newTotal = totalNow - (block.blockAtTotal || 0);
+    const newOnClass = classNow - (block.blockAtClassBattles || 0);
+    const otherSince = Math.max(0, newTotal - newOnClass);
+    return { otherSince, newOnClass, remaining: Math.max(0, ADVICE_COOLDOWN_OTHER - otherSince) };
+}
 
 function _tierDmgNorm(tier) {
     const t = parseInt(tier, 10) || 10;
@@ -3129,12 +3246,19 @@ function _tankDiffById(sess, tankId) {
     return (sess.diffs || []).find(d => String(d.tank_id) === String(tankId));
 }
 
-function _advicePeerStats(recentDiffs, recentTotal) {
-    const eligible = _filterAdviceTanks(recentDiffs || [], recentTotal || 0);
+function _advicePeerStats(recentDiffs, recentTotal, playMode) {
+    const eligible = _filterAdviceTanks(recentDiffs || [], recentTotal || 0, playMode);
     let peerWr = 0, peerW = 0;
     for (const d of eligible) {
         peerWr += (d.wins / d.battles * 100) * d.battles;
         peerW += d.battles;
+    }
+    if (peerW === 0) {
+        for (const d of recentDiffs || []) {
+            if (d.battles < 2) continue;
+            peerWr += (d.wins / d.battles * 100) * d.battles;
+            peerW += d.battles;
+        }
     }
     return { eligible, sessAvgWr: peerW > 0 ? peerWr / peerW : 50 };
 }
@@ -3196,40 +3320,121 @@ function _adviceBlockProgress(block, sess) {
 }
 
 function _aggregateAdviceByClass(recentDiffs) {
-    const byClass = {};
-    for (const d of recentDiffs || []) {
-        if ((d.battles || 0) < 2) continue;
-        const cls = d.tank_type || "?";
-        if (!byClass[cls]) byClass[cls] = { battles: 0, wins: 0, damage: 0 };
-        byClass[cls].battles += d.battles;
-        byClass[cls].wins += d.wins;
-        byClass[cls].damage += d.damage_dealt;
+    return _buildClassAdviceData(recentDiffs).slice().sort((a, b) => b.wr - a.wr);
+}
+
+function _updateClassAdviceBlocks(sess, recent, recentTotal, playMode) {
+    if (!sess.adviceClassBlocks) sess.adviceClassBlocks = {};
+    const blocks = sess.adviceClassBlocks;
+    let changed = false;
+    const totalNow = _sessionTotalBattles(sess);
+    const classData = _buildClassAdviceData(recent);
+    const classMap = {};
+    classData.forEach(c => { classMap[c.cls] = c; });
+
+    for (const cls of Object.keys({ ...blocks })) {
+        const block = blocks[cls];
+        const prog = _classBlockProgress(block, sess);
+        const data = classMap[cls];
+
+        if (prog.otherSince >= ADVICE_COOLDOWN_OTHER) {
+            if (prog.newOnClass >= ADVICE_RETRY_CLASS) {
+                const bad = data ? (_evalClassSameBad(data, playMode) || null) : null;
+                if (bad) {
+                    block.blockAtTotal = totalNow - (data?.battles || 0);
+                    block.blockAtClassBattles = _classBattlesInSession(sess, cls) - (data?.battles || 0);
+                    block.key = bad.key;
+                    block.severity = bad.severity;
+                    block.score = bad.score;
+                    block.vars = { ...bad.vars, left: String(ADVICE_COOLDOWN_OTHER) };
+                    changed = true;
+                } else {
+                    delete blocks[cls];
+                    changed = true;
+                }
+            } else {
+                delete blocks[cls];
+                changed = true;
+            }
+            continue;
+        }
+
+        if (data) {
+            const bad = _evalClassSameBad(data, playMode);
+            if (bad) {
+                block.key = bad.key;
+                block.severity = bad.severity;
+                block.score = bad.score;
+                block.vars = { ...bad.vars, left: String(prog.remaining) };
+            } else {
+                block.vars = { ...(block.vars || {}), left: String(prog.remaining) };
+            }
+        } else {
+            block.vars = { ...(block.vars || {}), left: String(prog.remaining) };
+        }
     }
-    return Object.entries(byClass)
-        .filter(([, v]) => v.battles >= 8)
-        .map(([cls, v]) => ({ cls, wr: v.wins / v.battles * 100, battles: v.battles, avgDmg: v.damage / v.battles }))
-        .sort((a, b) => b.wr - a.wr);
+
+    const worst = classData[0];
+    const best = classData[classData.length - 1];
+    const switchTip = worst && best ? _evalClassSwitch(worst, best) : null;
+
+    for (const data of classData) {
+        const cls = data.cls;
+        if (blocks[cls]) continue;
+        let bad = _evalClassSameBad(data, playMode);
+        if (!bad && switchTip && worst?.cls === cls) bad = switchTip;
+        if (!bad) continue;
+        blocks[cls] = {
+            classType: cls,
+            blockAtTotal: totalNow,
+            blockAtClassBattles: _classBattlesInSession(sess, cls),
+            key: bad.key,
+            severity: bad.severity,
+            score: bad.score,
+            vars: { ...bad.vars, left: String(ADVICE_COOLDOWN_OTHER) }
+        };
+        changed = true;
+        break;
+    }
+
+    return changed;
 }
 
 function updateSessionAdviceBlocks(sess) {
     if (sess.isPrimary) {
+        let changed = false;
         if (sess.adviceBlocks && Object.keys(sess.adviceBlocks).length) {
             sess.adviceBlocks = {};
-            return true;
+            changed = true;
         }
-        return false;
+        if (sess.adviceClassBlocks && Object.keys(sess.adviceClassBlocks).length) {
+            sess.adviceClassBlocks = {};
+            changed = true;
+        }
+        return changed;
     }
     const { diffs: recent } = getRecentSessionDiffs(sess);
     const recentTotal = recent.reduce((s, d) => s + d.battles, 0);
     if (recentTotal < 6) return false;
 
+    const playMode = _advicePlayMode(recent, recentTotal);
+    let changed = _updateClassAdviceBlocks(sess, recent, recentTotal, playMode);
+
     if (!sess.adviceBlocks) sess.adviceBlocks = {};
     const blocks = sess.adviceBlocks;
-    let changed = false;
+
+    if (playMode.rotating) {
+        if (Object.keys(blocks).length) {
+            sess.adviceBlocks = {};
+            changed = true;
+        }
+        return changed;
+    }
+
     const totalNow = _sessionTotalBattles(sess);
     const recentMap = {};
     recent.forEach(d => { recentMap[d.tank_id] = d; });
-    const { eligible, sessAvgWr } = _advicePeerStats(recent, recentTotal);
+    const { eligible, sessAvgWr } = _advicePeerStats(recent, recentTotal, playMode);
 
     for (const tid of Object.keys({ ...blocks })) {
         const block = blocks[tid];
@@ -3280,6 +3485,8 @@ function updateSessionAdviceBlocks(sess) {
     for (const d of eligible) {
         const tid = d.tank_id;
         if (blocks[tid]) continue;
+        const badClass = sess.adviceClassBlocks?.[d.tank_type];
+        if (badClass) continue;
         const bad = _evalTankBad(d, sessAvgWr);
         if (!bad) continue;
         const tankFull = _tankDiffById(sess, tid);
@@ -3302,41 +3509,34 @@ function updateSessionAdviceBlocks(sess) {
 function getSessionAdviceTips(sess) {
     const { diffs: recent, window, totalNow, needRefresh, sinceRefresh } = getRecentSessionDiffs(sess);
     const recentTotal = recent.reduce((s, d) => s + d.battles, 0);
-    const meta = { recentTotal, sinceRefresh, window, totalNow, needRefresh: !!(needRefresh && totalNow > 80) };
+    const playMode = _advicePlayMode(recent, recentTotal);
+    const meta = { recentTotal, sinceRefresh, window, totalNow, needRefresh: !!(needRefresh && totalNow > 80), playMode };
     if (meta.needRefresh) return { tips: [], meta };
 
     updateSessionAdviceBlocks(sess);
     const tips = [];
 
-    for (const block of Object.values(sess.adviceBlocks || {})) {
-        const prog = _adviceBlockProgress(block, sess);
-        const d = block.d || { tank_id: block.tank_id, tank_name: block.vars?.tank, tank_image: null };
+    for (const block of Object.values(sess.adviceClassBlocks || {})) {
+        const prog = _classBlockProgress(block, sess);
         tips.push({
             severity: block.severity || "warn",
-            key: prog.remaining > 0 ? "sessAdvHold" : block.key,
+            key: prog.remaining > 0 ? "sessAdvClassHold" : block.key,
             vars: { ...(block.vars || {}), left: String(prog.remaining) },
-            score: (block.score || 40) + prog.remaining * 0.1,
-            d
+            score: (block.score || 60) + prog.remaining * 0.15,
+            d: null
         });
     }
 
-    const classStats = _aggregateAdviceByClass(recent);
-    if (classStats.length >= 2) {
-        const best = classStats[0];
-        const worst = classStats[classStats.length - 1];
-        if (worst.wr < 36 && worst.battles >= 10 && best.wr >= worst.wr + 12 && best.battles >= 6) {
+    if (!playMode.rotating) {
+        for (const block of Object.values(sess.adviceBlocks || {})) {
+            const prog = _adviceBlockProgress(block, sess);
+            const d = block.d || { tank_id: block.tank_id, tank_name: block.vars?.tank, tank_image: null };
             tips.push({
-                severity: "tip",
-                key: "sessAdvClassSwitch",
-                vars: {
-                    class: _adviceClassLabel(worst.cls),
-                    battles: String(worst.battles),
-                    wr: worst.wr.toFixed(0),
-                    altClass: _adviceClassLabel(best.cls),
-                    altWr: best.wr.toFixed(0)
-                },
-                score: 55 + (36 - worst.wr),
-                d: null
+                severity: block.severity || "warn",
+                key: prog.remaining > 0 ? "sessAdvHold" : block.key,
+                vars: { ...(block.vars || {}), left: String(prog.remaining) },
+                score: (block.score || 40) + prog.remaining * 0.1,
+                d
             });
         }
     }
@@ -3345,7 +3545,7 @@ function getSessionAdviceTips(sess) {
     const seen = new Set();
     const out = [];
     for (const tip of tips) {
-        const id = tip.d?.tank_id || tip.d?.tank_name || ("cls:" + tip.key);
+        const id = tip.d?.tank_id || tip.d?.tank_name || ("cls:" + (tip.vars?.class || tip.key));
         if (seen.has(id)) continue;
         seen.add(id);
         out.push(tip);
@@ -3362,12 +3562,13 @@ function renderSessionAdvice(sess, sessIdx) {
         </div>`;
     }
 
-    const before = JSON.stringify(sess.adviceBlocks || {});
+    const before = JSON.stringify({ t: sess.adviceBlocks, c: sess.adviceClassBlocks });
     const { tips, meta } = getSessionAdviceTips(sess);
-    if (sessIdx != null && JSON.stringify(sess.adviceBlocks || {}) !== before) {
+    if (sessIdx != null && JSON.stringify({ t: sess.adviceBlocks, c: sess.adviceClassBlocks }) !== before) {
         const sessions = getSessions();
         if (sessions[sessIdx]) {
             sessions[sessIdx].adviceBlocks = sess.adviceBlocks;
+            sessions[sessIdx].adviceClassBlocks = sess.adviceClassBlocks;
             saveSessions(sessions);
         }
     }
