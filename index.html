@@ -155,6 +155,11 @@
         .drag-handle:hover{color:var(--acc)}
         .sess-draggable.dragging{opacity:.4;border-style:dashed}
         .sess-draggable.drag-over{border-color:var(--acc);box-shadow:0 0 10px rgba(245,166,35,.3)}
+        .sess-advice{margin-bottom:12px}
+        .sess-advice-item{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:8px;font-size:.82rem;line-height:1.45;border:1px solid var(--brd);margin-bottom:6px;background:var(--bg3)}
+        .sess-advice-warn{border-color:#e74c3c66;background:rgba(231,76,60,.06)}
+        .sess-advice-tip{border-color:#f5a62366;background:rgba(245,166,35,.06)}
+        .sess-advice-hint{border-color:#5cc9e866;background:rgba(92,201,232,.05)}
         #helpContent h4{color:var(--acc);margin:18px 0 6px;font-size:.95rem}
         #helpContent h4:first-child{margin-top:0}
         #helpContent p{color:var(--t1);font-size:.88rem;margin-bottom:8px}
@@ -468,6 +473,15 @@ const LANG = {
         mapsResultWin:"Перемога",mapsResultLoss:"Поразка",mapsResultDraw:"Нічия",mapsResultUnknown:"—",
         mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
         sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
+        sessAdviceTitle:"Поради за сесію",sessAdviceNote:"Порівняння з твоєю історією на цьому танку. Мало боїв — обережніші підказки. Час життя в бою — лише desktop.",
+        sessAdvSwitch:"{tank} ({battles} б.): нижче твоєї звички — WR {wr}% (зазвичай ~{normWr}%), шкода {dmgPct}%. Можливо, варто змінити танк або зробити паузу.",
+        sessAdvSwitchSoft:"{tank} ({battles} б.): поки слабше за твою норму (WR {wr}% vs ~{normWr}%). Ще кілька боїв — або спробуй інший танк.",
+        sessAdvBold:"{tank}: частіше виживаєш ({surv}% vs ~{normSurv}%), але шкода нижча ({dmgPct}%) — можливо, є простір для активнішої гри.",
+        sessAdvSafe:"{tank}: нижче виживання ({surv}% vs ~{normSurv}%) і шкода ({dmgPct}%) — спробуй обережніший темп.",
+        sessAdvRisky:"{tank}: шкода близька до норми, але часто гинеш — ризикований стиль. Якщо WR падає, трохи терплячіше.",
+        sessAdvHot:"{tank}: зараз краще за твою звичку (WR {wr}% vs ~{normWr}%, шкода {dmgPct}%) — можна продовжувати.",
+        sessAdvSlight:"{tank} ({battles} б.): трохи нижче норми — поки рано висновкам, понаблюдай ще.",
+        sessViewAll:"усі",
         sessVsAvg:"vs середнє",mapsTrend:"Динаміка боїв",mapsStreakBest:"Краща серія",mapsStreakWorst:"Серія поразок",mapsBestHour:"Найкращий час",mapsCurrentStreak:"Поточна серія",
         tankDetails:"Деталі танку",cacheRefresh:"оновити",
         helpTitle:"Як користуватися CL-Stats",
@@ -568,6 +582,15 @@ const LANG = {
         mapsResultWin:"Победа",mapsResultLoss:"Поражение",mapsResultDraw:"Ничья",mapsResultUnknown:"—",
         mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
         sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
+        sessAdviceTitle:"Советы за сессию",sessAdviceNote:"Сравнение с твоей историей на этом танке. Мало боёв — осторожнее подсказки. Время жизни — только desktop.",
+        sessAdvSwitch:"{tank} ({battles} б.): ниже твоей нормы — WR {wr}% (обычно ~{normWr}%), урон {dmgPct}%. Можно сменить танк или сделать паузу.",
+        sessAdvSwitchSoft:"{tank} ({battles} б.): пока слабее нормы (WR {wr}% vs ~{normWr}%). Ещё несколько боёв — или другой танк.",
+        sessAdvBold:"{tank}: чаще выживаешь ({surv}% vs ~{normSurv}%), но урон ниже ({dmgPct}%) — есть простор для активнее.",
+        sessAdvSafe:"{tank}: ниже выживание ({surv}% vs ~{normSurv}%) и урон ({dmgPct}%) — попробуй осторожнее.",
+        sessAdvRisky:"{tank}: урон близок к норме, но часто погибаешь — рискованный стиль. Если WR падает, чуть терпеливее.",
+        sessAdvHot:"{tank}: сейчас лучше нормы (WR {wr}% vs ~{normWr}%, урон {dmgPct}%) — можно продолжать.",
+        sessAdvSlight:"{tank} ({battles} б.): чуть ниже нормы — рано для выводов, понаблюдай.",
+        sessViewAll:"все",
         sessVsAvg:"vs среднее",mapsTrend:"Динамика боёв",mapsStreakBest:"Лучшая серия",mapsStreakWorst:"Серия поражений",mapsBestHour:"Лучшее время",mapsCurrentStreak:"Текущая серия",
         tankDetails:"Детали танка",cacheRefresh:"обновить",
         helpTitle:"Как пользоваться CL-Stats",
@@ -668,6 +691,15 @@ const LANG = {
         mapsResultWin:"Victory",mapsResultLoss:"Defeat",mapsResultDraw:"Draw",mapsResultUnknown:"—",
         mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
         sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
+        sessAdviceTitle:"Session tips",sessAdviceNote:"Compared to your history on this tank. Few battles = gentler hints. Battle life time — desktop only.",
+        sessAdvSwitch:"{tank} ({battles} bt): below your usual — WR {wr}% (norm ~{normWr}%), damage {dmgPct}%. Consider another tank or a short break.",
+        sessAdvSwitchSoft:"{tank} ({battles} bt): slightly below norm (WR {wr}% vs ~{normWr}%). A few more battles — or try another tank.",
+        sessAdvBold:"{tank}: surviving more ({surv}% vs ~{normSurv}%) but less damage ({dmgPct}%) — room to play more actively.",
+        sessAdvSafe:"{tank}: lower survival ({surv}% vs ~{normSurv}%) and damage ({dmgPct}%) — try a calmer pace.",
+        sessAdvRisky:"{tank}: damage near norm but dying often — risky style. If WR drops, play a bit safer.",
+        sessAdvHot:"{tank}: above your usual (WR {wr}% vs ~{normWr}%, damage {dmgPct}%) — keep going.",
+        sessAdvSlight:"{tank} ({battles} bt): a bit below norm — too early to tell, watch a few more.",
+        sessViewAll:"all",
         sessVsAvg:"vs average",mapsTrend:"Battle Trend",mapsStreakBest:"Best Streak",mapsStreakWorst:"Loss Streak",mapsBestHour:"Best Hour",mapsCurrentStreak:"Current Streak",
         tankDetails:"Tank Details",cacheRefresh:"refresh",
         helpTitle:"How to use CL-Stats",
@@ -768,6 +800,15 @@ const LANG = {
         mapsResultWin:"G'alaba",mapsResultLoss:"Mag'lubiyat",mapsResultDraw:"Durang",mapsResultUnknown:"—",
         mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
         sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
+        sessAdviceTitle:"Sessiya maslahatlari",sessAdviceNote:"Shu tankdagi tarixing bilan solishtirish. Kam jang — ehtiyotkorroq maslahat. Yashash vaqti — faqat desktop.",
+        sessAdvSwitch:"{tank} ({battles} j.): odatdagidan past — WR {wr}% (odat ~{normWr}%), zarar {dmgPct}%. Boshqa tank yoki tanaffus mumkin.",
+        sessAdvSwitchSoft:"{tank} ({battles} j.): hozircha normadan past (WR {wr}% vs ~{normWr}%). Yana bir necha jang — yoki boshqa tank.",
+        sessAdvBold:"{tank}: ko'proq omon qolasan ({surv}% vs ~{normSurv}%), lekin zarar kam ({dmgPct}%) — faolroq o'ynash mumkin.",
+        sessAdvSafe:"{tank}: omon qolish past ({surv}% vs ~{normSurv}%) va zarar ({dmgPct}%) — ehtiyotkorroq temp.",
+        sessAdvRisky:"{tank}: zarar normaga yaqin, lekin tez-tez o'lasan — xavfli uslub. WR tushsa, biroz sabrliroq.",
+        sessAdvHot:"{tank}: odatdan yaxshi (WR {wr}% vs ~{normWr}%, zarar {dmgPct}%) — davom eting.",
+        sessAdvSlight:"{tank} ({battles} j.): biroz past — hali erta xulosa qilish uchun.",
+        sessViewAll:"barchasi",
         sessVsAvg:"vs o'rtacha",mapsTrend:"Janglar dinamikasi",mapsStreakBest:"Eng yaxshi seriya",mapsStreakWorst:"Mag'lubiyat seriyasi",mapsBestHour:"Eng yaxshi vaqt",mapsCurrentStreak:"Joriy seriya",
         tankDetails:"Tank tafsilotlari",cacheRefresh:"yangilash",
         helpTitle:"CL-Stats dan qanday foydalanish",
@@ -1786,6 +1827,7 @@ function renderSessions() {
                 ${typeof s.sessPerf === 'number' ? `<div class="session-stat-card"><div class="stat-value" style="color:${s.sessPerf >= 0 ? '#7ecb54' : '#e74c3c'}">${s.sessPerf >= 0 ? '+' : ''}${s.sessPerf.toFixed(1)}%</div><div class="stat-label">${t("sessVsAvg")}</div></div>` : ''}
             </div>
             ${renderBestWorstTank(diffs, i)}
+            ${renderSessionAdvice(diffs, s.tanks)}
             ${diffs.length > 0 ? `<details${autoExpand || expandedSet.has(String(i)) ? " open" : ""}><summary style="cursor:pointer;color:var(--t2);font-size:.85rem;margin-bottom:8px">${t("sessTanks")} (${diffs.length})</summary>
             <div class="table-wrap">
                 <table><thead><tr>
@@ -2884,6 +2926,130 @@ async function doCompareTank() {
 }
 
 // ==================== SESSION BEST/WORST TANK ====================
+function fmtAdvice(template, vars) {
+    let s = template;
+    for (const [k, v] of Object.entries(vars)) s = s.split(`{${k}}`).join(v);
+    return s;
+}
+
+function _adviceWrBand(normWR, historyBattles) {
+    const p = Math.max(0.05, Math.min(0.95, normWR / 100));
+    const n = Math.max(historyBattles, 1);
+    return Math.max(10, Math.sqrt(p * (1 - p) / n) * 100 * 2.2);
+}
+
+function _adviceConfidence(sessionBattles, historyBattles) {
+    const sess = Math.min(1, Math.max(0, (sessionBattles - 2) / 7));
+    const hist = Math.min(1, Math.max(0, (historyBattles - 8) / 42));
+    return sess * 0.62 + hist * 0.38;
+}
+
+function _advicePerfIndex(wrDelta, dmgRatio, survDelta) {
+    const wrPart = (-wrDelta) * 1.15;
+    const dmgPart = dmgRatio < 1 ? (1 - dmgRatio) * 42 : (dmgRatio - 1) * 18;
+    let survPart = 0;
+    if (survDelta >= 8 && dmgRatio < 0.88) survPart = Math.min(12, (survDelta - 6) * 0.35);
+    if (survDelta <= -8 && dmgRatio < 0.9) survPart = Math.min(14, (-survDelta - 6) * 0.4);
+    return wrPart + dmgPart + survPart;
+}
+
+function computeSessionAdvice(diffs, baselineTanks) {
+    const oldMap = {};
+    (baselineTanks || []).forEach(tk => { oldMap[tk.tank_id] = tk; });
+    const tips = [];
+
+    for (const d of diffs || []) {
+        if (d.battles < 3) continue;
+        const base = oldMap[d.tank_id];
+        if (!base?.all) continue;
+        const ob = base.all.battles || 0;
+        if (ob < 8) continue;
+
+        const sessWR = d.wins / d.battles * 100;
+        const normWR = base.all.wins / ob * 100;
+        if (normWR < 4 || normWR > 96) continue;
+
+        const sessDmg = d.damage_dealt / d.battles;
+        const normDmg = base.all.damage_dealt / ob;
+        const sessSurv = (d.survived || 0) / d.battles * 100;
+        const normSurv = (base.all.survived_battles || 0) / ob * 100;
+        const wrDelta = sessWR - normWR;
+        const dmgRatio = normDmg > 0 ? sessDmg / normDmg : 1;
+        const dmgPct = Math.round(dmgRatio * 100);
+        const survDelta = sessSurv - normSurv;
+        const conf = _adviceConfidence(d.battles, ob);
+        const wrBand = _adviceWrBand(normWR, ob);
+        const perfUnder = _advicePerfIndex(wrDelta, dmgRatio, survDelta);
+        const perfOver = _advicePerfIndex(-wrDelta, 2 - dmgRatio, -survDelta);
+
+        const vars = {
+            tank: d.tank_name || "?",
+            battles: String(d.battles),
+            wr: sessWR.toFixed(0),
+            normWr: normWR.toFixed(0),
+            dmgPct: String(dmgPct),
+            surv: sessSurv.toFixed(0),
+            normSurv: normSurv.toFixed(0)
+        };
+
+        const wrSig = -wrDelta / wrBand;
+        let tip = null;
+
+        const switchNeed = 36 + (1 - conf) * 22 + (ob < 20 ? 14 : ob < 35 ? 7 : 0);
+        const switchSoftNeed = 20 + (1 - conf) * 16 + (d.battles < 4 ? 10 : 0);
+        const hotNeed = 26 + (1 - conf) * 10;
+        const slightCap = 14 + (1 - conf) * 10;
+
+        if (perfUnder >= switchNeed && wrSig >= 0.85 && dmgRatio < 0.9) {
+            const hardOk = d.battles >= 5 && conf >= 0.38;
+            const key = hardOk ? "sessAdvSwitch" : "sessAdvSwitchSoft";
+            tip = { severity: hardOk ? "warn" : "tip", key, vars, score: perfUnder + 50, d };
+        } else if (perfUnder >= switchSoftNeed && wrSig >= 0.5 && (dmgRatio < 0.93 || wrDelta <= -wrBand * 0.65)) {
+            tip = { severity: "tip", key: "sessAdvSwitchSoft", vars, score: perfUnder + 20, d };
+        } else if (d.battles <= 4 && perfUnder >= 42 && wrSig >= 1.1 && wrDelta < 0) {
+            tip = { severity: "tip", key: "sessAdvSwitchSoft", vars, score: perfUnder + 15, d };
+        } else if (perfUnder >= slightCap && perfUnder < switchSoftNeed && d.battles <= 5 && wrDelta < 0) {
+            tip = { severity: "hint", key: "sessAdvSlight", vars, score: perfUnder, d };
+        } else if (survDelta >= 10 && dmgRatio < 0.76 && perfUnder < switchSoftNeed && wrDelta > -wrBand) {
+            tip = { severity: "tip", key: "sessAdvBold", vars, score: 30 + survDelta, d };
+        } else if (survDelta <= -10 && dmgRatio < 0.8 && perfUnder >= 18) {
+            tip = { severity: conf >= 0.4 ? "warn" : "tip", key: "sessAdvSafe", vars, score: 28 + perfUnder * 0.5, d };
+        } else if (survDelta <= -8 && dmgRatio >= 0.9 && wrDelta <= -5 && perfUnder >= 12) {
+            tip = { severity: "tip", key: "sessAdvRisky", vars, score: 22, d };
+        } else if (perfOver >= hotNeed && wrDelta >= 6 && dmgRatio >= 0.93) {
+            tip = { severity: "good", key: "sessAdvHot", vars, score: -perfOver, d };
+        }
+
+        if (tip) tips.push(tip);
+    }
+
+    tips.sort((a, b) => b.score - a.score);
+    const seen = new Set();
+    const out = [];
+    for (const t of tips) {
+        const id = t.d.tank_id || t.d.tank_name;
+        if (seen.has(id)) continue;
+        seen.add(id);
+        out.push(t);
+        if (out.length >= 3) break;
+    }
+    return out;
+}
+
+function renderSessionAdvice(diffs, baselineTanks) {
+    const tips = computeSessionAdvice(diffs, baselineTanks);
+    if (!tips.length) return "";
+    const cls = { warn: "sess-advice-warn", tip: "sess-advice-tip", good: "sess-advice-good", hint: "sess-advice-hint" };
+    return `<div class="sess-advice">
+        <div style="font-size:.78rem;color:var(--t2);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">${t("sessAdviceTitle")}</div>
+        ${tips.map(tip => {
+            const img = tip.d.tank_image ? `<img src="${tip.d.tank_image}" alt="" style="width:28px;height:auto;border-radius:2px;flex-shrink:0;margin-top:1px">` : "";
+            return `<div class="sess-advice-item ${cls[tip.severity] || ""}">${img}<span>${fmtAdvice(t(tip.key), tip.vars)}</span></div>`;
+        }).join("")}
+        <div style="font-size:.72rem;color:var(--t2);margin-top:2px;opacity:.85">${t("sessAdviceNote")}</div>
+    </div>`;
+}
+
 function renderBestWorstTank(diffs, sessIdx) {
     const eligible = diffs.filter(d => d.battles >= 2);
     if (eligible.length < 2) return "";
@@ -2905,7 +3071,7 @@ function renderBestWorstTank(diffs, sessIdx) {
         return `<div onclick="openRankedModal(${sessIdx},'${mode}')" style="flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;cursor:pointer;transition:border-color .18s" onmouseenter="this.style.borderColor='var(--acc)'" onmouseleave="this.style.borderColor='var(--brd)'">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
                 <span style="font-size:.75rem;color:${color};font-weight:600">${label}</span>
-                <span style="font-size:.7rem;color:var(--t2);opacity:.75">▶ всі ${scored.length}</span>
+                <span style="font-size:.7rem;color:var(--t2);opacity:.75">▶ ${t("sessViewAll")} ${scored.length}</span>
             </div>
             <div style="display:flex;align-items:center;margin-bottom:4px">${img}<span style="font-size:.82rem;${nc}">${d.tank_name || "?"}</span>
                 <span style="margin-left:auto;font-size:.75rem;color:var(--t2)">${TIER_ROMAN[d.tank_tier] || ""}</span>

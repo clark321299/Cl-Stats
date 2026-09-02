@@ -1,4 +1,4 @@
-const CACHE_NAME = "clstats-v7";
+const CACHE_NAME = "clstats-v9";
 const ASSETS = [
     "./index.html",
     "./tank_names.json",
