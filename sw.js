@@ -1,6 +1,7 @@
-const CACHE_NAME = "clstats-v2";
+const CACHE_NAME = "clstats-v3";
 const ASSETS = [
     "./index.html",
+    "./tank_names.json",
     "./manifest.json",
     "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
 ];

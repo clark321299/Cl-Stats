@@ -814,6 +814,8 @@ const $ = id => document.getElementById(id);
 let allTankData = [];
 let battlesChart = null, tankTypesChart = null, nationsChart = null, tiersChart = null;
 let tankInfoCache = {};
+let tankDisplayLookup = { byTankId: {}, byName: {} };
+let staticTankInfo = {};
 let currentAccountId = null;
 
 // ==================== THEME ====================
@@ -1006,12 +1008,69 @@ const TANK_NAMES = {
     18801: { name: "mausТank", tier: 9, type: "heavyTank", nation: "germany" }
 };
 
+async function loadTankDisplayNames() {
+    try {
+        const r = await fetch("./tank_names.json");
+        const data = await r.json();
+        if (data.ok) {
+            tankDisplayLookup = {
+                byTankId: data.byTankId || {},
+                byName: data.byName || {},
+            };
+            staticTankInfo = data.tankInfo || {};
+        }
+    } catch (e) {
+        console.warn("tank names:", e);
+    }
+}
+
+function _tankTechTail(name) {
+    let s = String(name || "").trim();
+    s = s.replace(/^[^:]+:\s*/, "");
+    const m = s.match(/^[A-Za-z]{1,4}\d+_(.+)$/);
+    return m ? m[1] : s;
+}
+
+function tankDisplayName(wgName, tankId) {
+    const base = String(wgName || "").trim() || "—";
+    const tid = tankId != null && tankId !== "" ? String(tankId) : "";
+    if (tid && tankDisplayLookup.byTankId && tankDisplayLookup.byTankId[tid]) {
+        return tankDisplayLookup.byTankId[tid];
+    }
+    const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const probes = [base];
+    const tail = _tankTechTail(base);
+    if (tail && tail !== base) probes.push(tail);
+    for (const p of probes) {
+        const nk = norm(p);
+        if (nk && tankDisplayLookup.byName && tankDisplayLookup.byName[nk]) {
+            return tankDisplayLookup.byName[nk];
+        }
+    }
+    return base;
+}
+
 async function getTankInfo() {
-    if (Object.keys(tankInfoCache).length > 0) return tankInfoCache;
-    const data = await api("encyclopedia/vehicles", { fields: "name,tier,type,nation,is_premium,images.preview" }, 86400000); // 24h cache
+    if (Object.keys(tankInfoCache).length > 0) {
+        if (!Object.keys(tankDisplayLookup.byTankId || {}).length) {
+            await loadTankDisplayNames();
+        }
+        return tankInfoCache;
+    }
+    const [data] = await Promise.all([
+        api("encyclopedia/vehicles", { fields: "name,tier,type,nation,is_premium,images.preview" }, 86400000),
+        loadTankDisplayNames(),
+    ]);
     if (data.status === "ok" && data.data) tankInfoCache = data.data;
+    for (const [id, info] of Object.entries(staticTankInfo)) {
+        if (!tankInfoCache[id]) tankInfoCache[id] = info;
+    }
     for (const [id, info] of Object.entries(TANK_NAMES)) {
         if (!tankInfoCache[id]) tankInfoCache[id] = info;
+    }
+    for (const [id, info] of Object.entries(tankInfoCache)) {
+        const wg = info.name || tankDisplayLookup.byTankId[id] || "";
+        info.name = tankDisplayName(wg, id);
     }
     return tankInfoCache;
 }
@@ -1101,7 +1160,8 @@ async function loadPlayer(accountId, nickname) {
 function enrichTanks(tanks, tankInfo) {
     tanks.forEach(t => {
         const info = tankInfo[String(t.tank_id)] || {};
-        t.tank_name = info.name || `#${t.tank_id}`;
+        const wg = info.name || tankDisplayLookup.byTankId[String(t.tank_id)] || "";
+        t.tank_name = tankDisplayName(wg, t.tank_id) || (wg ? wg : `#${t.tank_id}`);
         t.tank_tier = info.tier || 0;
         t.tank_type = info.type || "";
         t.tank_nation = info.nation || "unknown";
