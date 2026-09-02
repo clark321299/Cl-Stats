@@ -473,15 +473,18 @@ const LANG = {
         mapsResultWin:"Перемога",mapsResultLoss:"Поразка",mapsResultDraw:"Нічия",mapsResultUnknown:"—",
         mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
         sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
-        sessAdviceTitle:"Поради за сесію",sessAdviceNote:"Порівняння з твоєю історією на танку. На великих сесіях — лише останні бої після оновлень.",
+        sessPrimary:"Основна (за весь час)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на акаунт — загальна статистика без порад.",
+        sessAdviceTitle:"Поради за сесію",sessAdviceNote:"Лише останні бої цієї сесії vs норма рівня (~2000 на X). Не враховує взвод і команду.",
+        sessAdvicePrimarySkip:"Поради вимкнено — це основна сесія. Дивись Day/Week для підказок під час гри.",
         sessAdviceRecent:"З останнього оновлення (~{n} б.)",sessAdviceRecentWin:"За останні ~{n} боїв",sessAdviceNeedRefresh:"На цій сесії занадто багато боїв без знімків. Натисни «Оновити» ще раз після кількох нових боїв — тоді поради рахуватимуть лише останню гру.",
-        sessAdvSwitch:"{tank} ({battles} б.): нижче твоєї звички — WR {wr}% (зазвичай ~{normWr}%), шкода {dmgPct}%. Можливо, варто змінити танк або зробити паузу.",
-        sessAdvSwitchSoft:"{tank} ({battles} б.): поки слабше за твою норму (WR {wr}% vs ~{normWr}%). Ще кілька боїв — або спробуй інший танк.",
-        sessAdvBold:"{tank}: частіше виживаєш ({surv}% vs ~{normSurv}%), але шкода нижча ({dmgPct}%) — можливо, є простір для активнішої гри.",
-        sessAdvSafe:"{tank}: нижче виживання ({surv}% vs ~{normSurv}%) і шкода ({dmgPct}%) — спробуй обережніший темп.",
-        sessAdvRisky:"{tank}: шкода близька до норми, але часто гинеш — ризикований стиль. Якщо WR падає, трохи терплячіше.",
-        sessAdvHot:"{tank}: зараз краще за твою звичку (WR {wr}% vs ~{normWr}%, шкода {dmgPct}%) — можна продовжувати.",
-        sessAdvSlight:"{tank} ({battles} б.): трохи нижче норми — поки рано висновкам, понаблюдай ще.",
+        sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, шкода ~{dmgPct}% від норми {tier} рівня — варто змінити танк або зробити паузу.",
+        sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабше за інші танки в цій вибірці (~{normWr}%). Спробуй інший танк.",
+        sessAdvClassSwitch:"{class} ({battles} б.): WR {wr}% — спробуй інший клас (напр. {altClass}: {altWr}%).",
+        sessAdvBold:"{tank}: часто виживаєш ({surv}%), але шкода низька ({dmgPct}% від норми) — можливо, є простір для активнішої гри.",
+        sessAdvSafe:"{tank}: низьке виживання ({surv}%) і шкода ({dmgPct}%) — спробуй обережніший темп.",
+        sessAdvRisky:"{tank}: шкода близька до норми ({dmgPct}%), але часто гинеш — ризикований стиль.",
+        sessAdvHot:"{tank}: WR {wr}%, ~{avgDmg} шкоди ({tier} рів.) — зараз добре, можна продовжувати.",
+        sessAdvSlight:"{tank} ({battles} б.): трохи слабше за інші в цій вибірці — поки рано для висновків.",
         sessViewAll:"усі",
         sessVsAvg:"vs середнє",mapsTrend:"Динаміка боїв",mapsStreakBest:"Краща серія",mapsStreakWorst:"Серія поразок",mapsBestHour:"Найкращий час",mapsCurrentStreak:"Поточна серія",
         tankDetails:"Деталі танку",cacheRefresh:"оновити",
@@ -583,15 +586,18 @@ const LANG = {
         mapsResultWin:"Победа",mapsResultLoss:"Поражение",mapsResultDraw:"Ничья",mapsResultUnknown:"—",
         mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
         sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
-        sessAdviceTitle:"Советы за сессию",sessAdviceNote:"Сравнение с твоей историей на танке. На больших сессиях — только последние бои после обновлений.",
+        sessPrimary:"Основная (за всё время)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на аккаунт — общая статистика без советов.",
+        sessAdviceTitle:"Советы за сессию",sessAdviceNote:"Только последние бои этой сессии vs норма уровня (~2000 на X). Взвод и команда не учитываются.",
+        sessAdvicePrimarySkip:"Советы отключены — основная сессия. Смотри Day/Week для подсказок во время игры.",
         sessAdviceRecent:"С последнего обновления (~{n} б.)",sessAdviceRecentWin:"За последние ~{n} боёв",sessAdviceNeedRefresh:"На этой сессии слишком много боёв без снимков. Нажми «Обновить» ещё раз после нескольких новых боёв — советы будут только за последнюю игру.",
-        sessAdvSwitch:"{tank} ({battles} б.): ниже твоей нормы — WR {wr}% (обычно ~{normWr}%), урон {dmgPct}%. Можно сменить танк или сделать паузу.",
-        sessAdvSwitchSoft:"{tank} ({battles} б.): пока слабее нормы (WR {wr}% vs ~{normWr}%). Ещё несколько боёв — или другой танк.",
-        sessAdvBold:"{tank}: чаще выживаешь ({surv}% vs ~{normSurv}%), но урон ниже ({dmgPct}%) — есть простор для активнее.",
-        sessAdvSafe:"{tank}: ниже выживание ({surv}% vs ~{normSurv}%) и урон ({dmgPct}%) — попробуй осторожнее.",
-        sessAdvRisky:"{tank}: урон близок к норме, но часто погибаешь — рискованный стиль. Если WR падает, чуть терпеливее.",
-        sessAdvHot:"{tank}: сейчас лучше нормы (WR {wr}% vs ~{normWr}%, урон {dmgPct}%) — можно продолжать.",
-        sessAdvSlight:"{tank} ({battles} б.): чуть ниже нормы — рано для выводов, понаблюдай.",
+        sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, урон ~{dmgPct}% от нормы {tier} уровня — стоит сменить танк или сделать паузу.",
+        sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабее других танков в выборке (~{normWr}%). Попробуй другой танк.",
+        sessAdvClassSwitch:"{class} ({battles} б.): WR {wr}% — попробуй другой класс (напр. {altClass}: {altWr}%).",
+        sessAdvBold:"{tank}: часто выживаешь ({surv}%), но урон низкий ({dmgPct}% от нормы) — есть простор для активнее.",
+        sessAdvSafe:"{tank}: низкое выживание ({surv}%) и урон ({dmgPct}%) — попробуй осторожнее.",
+        sessAdvRisky:"{tank}: урон близок к норме ({dmgPct}%), но часто погибаешь — рискованный стиль.",
+        sessAdvHot:"{tank}: WR {wr}%, ~{avgDmg} урона ({tier} ур.) — сейчас хорошо, можно продолжать.",
+        sessAdvSlight:"{tank} ({battles} б.): чуть слабее других в выборке — рано для выводов.",
         sessViewAll:"все",
         sessVsAvg:"vs среднее",mapsTrend:"Динамика боёв",mapsStreakBest:"Лучшая серия",mapsStreakWorst:"Серия поражений",mapsBestHour:"Лучшее время",mapsCurrentStreak:"Текущая серия",
         tankDetails:"Детали танка",cacheRefresh:"обновить",
@@ -693,15 +699,18 @@ const LANG = {
         mapsResultWin:"Victory",mapsResultLoss:"Defeat",mapsResultDraw:"Draw",mapsResultUnknown:"—",
         mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
         sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
-        sessAdviceTitle:"Session tips",sessAdviceNote:"Compared to your tank history. On large sessions — recent battles only after refreshes.",
+        sessPrimary:"Primary (all-time)",sessPrimaryBadge:"ALL",sessPrimaryHint:"One per account — lifetime stats, no tips.",
+        sessAdviceTitle:"Session tips",sessAdviceNote:"Recent session battles vs tier norm (~2000 on tier X). Platoon and team not considered.",
+        sessAdvicePrimarySkip:"Tips disabled — primary session. Use Day/Week for in-game hints.",
         sessAdviceRecent:"Since last refresh (~{n} bt.)",sessAdviceRecentWin:"Last ~{n} battles",sessAdviceNeedRefresh:"Too many battles without snapshots. Press Refresh again after a few new battles — tips will use recent play only.",
-        sessAdvSwitch:"{tank} ({battles} bt): below your usual — WR {wr}% (norm ~{normWr}%), damage {dmgPct}%. Consider another tank or a short break.",
-        sessAdvSwitchSoft:"{tank} ({battles} bt): slightly below norm (WR {wr}% vs ~{normWr}%). A few more battles — or try another tank.",
-        sessAdvBold:"{tank}: surviving more ({surv}% vs ~{normSurv}%) but less damage ({dmgPct}%) — room to play more actively.",
-        sessAdvSafe:"{tank}: lower survival ({surv}% vs ~{normSurv}%) and damage ({dmgPct}%) — try a calmer pace.",
-        sessAdvRisky:"{tank}: damage near norm but dying often — risky style. If WR drops, play a bit safer.",
-        sessAdvHot:"{tank}: above your usual (WR {wr}% vs ~{normWr}%, damage {dmgPct}%) — keep going.",
-        sessAdvSlight:"{tank} ({battles} bt): a bit below norm — too early to tell, watch a few more.",
+        sessAdvSwitch:"{tank} ({battles} bt): WR {wr}%, damage ~{dmgPct}% of tier {tier} norm — consider another tank or a break.",
+        sessAdvSwitchSoft:"{tank} ({battles} bt): WR {wr}% — weaker than other tanks in this window (~{normWr}%). Try another tank.",
+        sessAdvClassSwitch:"{class} ({battles} bt): WR {wr}% — try another class (e.g. {altClass}: {altWr}%).",
+        sessAdvBold:"{tank}: often surviving ({surv}%) but low damage ({dmgPct}% of norm) — room to play more actively.",
+        sessAdvSafe:"{tank}: low survival ({surv}%) and damage ({dmgPct}%) — try a calmer pace.",
+        sessAdvRisky:"{tank}: damage near norm ({dmgPct}%) but dying often — risky style.",
+        sessAdvHot:"{tank}: WR {wr}%, ~{avgDmg} dmg (tier {tier}) — looking good, keep going.",
+        sessAdvSlight:"{tank} ({battles} bt): slightly weaker than others in this window — too early to tell.",
         sessViewAll:"all",
         sessVsAvg:"vs average",mapsTrend:"Battle Trend",mapsStreakBest:"Best Streak",mapsStreakWorst:"Loss Streak",mapsBestHour:"Best Hour",mapsCurrentStreak:"Current Streak",
         tankDetails:"Tank Details",cacheRefresh:"refresh",
@@ -803,15 +812,18 @@ const LANG = {
         mapsResultWin:"G'alaba",mapsResultLoss:"Mag'lubiyat",mapsResultDraw:"Durang",mapsResultUnknown:"—",
         mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
         sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
-        sessAdviceTitle:"Sessiya maslahatlari",sessAdviceNote:"Tank tarixing bilan solishtirish. Katta sessiyalarda — faqat yangilashdan keyingi so'nggi janglar.",
+        sessPrimary:"Asosiy (butun vaqt)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Har hisobda bitta — umumiy stat, maslahatsiz.",
+        sessAdviceTitle:"Sessiya maslahatlari",sessAdviceNote:"Faqat sessiyaning so'nggi janglari vs daraja normasi (~2000 X). Platoon va jamoa hisobga olinmaydi.",
+        sessAdvicePrimarySkip:"Maslahatlar o'chirilgan — asosiy sessiya. O'yin vaqtida Day/Week ga qarang.",
         sessAdviceRecent:"Oxirgi yangilashdan (~{n} j.)",sessAdviceRecentWin:"So'nggi ~{n} jang",sessAdviceNeedRefresh:"Juda ko'p jang, snapshot yo'q. Bir necha jangdan keyin yana «Yangilash» bosing — maslahatlar faqat so'nggi o'yin uchun.",
-        sessAdvSwitch:"{tank} ({battles} j.): odatdagidan past — WR {wr}% (odat ~{normWr}%), zarar {dmgPct}%. Boshqa tank yoki tanaffus mumkin.",
-        sessAdvSwitchSoft:"{tank} ({battles} j.): hozircha normadan past (WR {wr}% vs ~{normWr}%). Yana bir necha jang — yoki boshqa tank.",
-        sessAdvBold:"{tank}: ko'proq omon qolasan ({surv}% vs ~{normSurv}%), lekin zarar kam ({dmgPct}%) — faolroq o'ynash mumkin.",
-        sessAdvSafe:"{tank}: omon qolish past ({surv}% vs ~{normSurv}%) va zarar ({dmgPct}%) — ehtiyotkorroq temp.",
-        sessAdvRisky:"{tank}: zarar normaga yaqin, lekin tez-tez o'lasan — xavfli uslub. WR tushsa, biroz sabrliroq.",
-        sessAdvHot:"{tank}: odatdan yaxshi (WR {wr}% vs ~{normWr}%, zarar {dmgPct}%) — davom eting.",
-        sessAdvSlight:"{tank} ({battles} j.): biroz past — hali erta xulosa qilish uchun.",
+        sessAdvSwitch:"{tank} ({battles} j.): WR {wr}%, zarar ~{dmgPct}% {tier} daraja normasidan — tankni almashtiring yoki tanaffus.",
+        sessAdvSwitchSoft:"{tank} ({battles} j.): WR {wr}% — tanlovda boshqa tanklardan past (~{normWr}%). Boshqa tank sinab ko'ring.",
+        sessAdvClassSwitch:"{class} ({battles} j.): WR {wr}% — boshqa klass sinab ko'ring (mas. {altClass}: {altWr}%).",
+        sessAdvBold:"{tank}: tez-tez omon qolasan ({surv}%), lekin zarar past ({dmgPct}%) — faolroq o'ynash mumkin.",
+        sessAdvSafe:"{tank}: omon qolish past ({surv}%) va zarar ({dmgPct}%) — ehtiyotkorroq temp.",
+        sessAdvRisky:"{tank}: zarar normaga yaqin ({dmgPct}%), lekin tez-tez o'lasan — xavfli uslub.",
+        sessAdvHot:"{tank}: WR {wr}%, ~{avgDmg} zarar ({tier} dar.) — yaxshi, davom eting.",
+        sessAdvSlight:"{tank} ({battles} j.): tanlovda biroz past — hali erta xulosa.",
         sessViewAll:"barchasi",
         sessVsAvg:"vs o'rtacha",mapsTrend:"Janglar dinamikasi",mapsStreakBest:"Eng yaxshi seriya",mapsStreakWorst:"Mag'lubiyat seriyasi",mapsBestHour:"Eng yaxshi vaqt",mapsCurrentStreak:"Joriy seriya",
         tankDetails:"Tank tafsilotlari",cacheRefresh:"yangilash",
@@ -1713,6 +1725,56 @@ function _sessionAutoResetCfg(sess) {
     return cfg;
 }
 
+function _sessionBattleTotal(sess) {
+    return (sess.diffs || []).reduce((s, d) => s + (d.battles || 0), 0);
+}
+
+function _ensureSessionPrimaryFlags(sessions) {
+    const byAcc = {};
+    sessions.forEach((s, i) => {
+        const k = String(s.accountId || "unknown");
+        if (!byAcc[k]) byAcc[k] = [];
+        byAcc[k].push(i);
+    });
+    let changed = false;
+    for (const indices of Object.values(byAcc)) {
+        const primaries = indices.filter(i => sessions[i].isPrimary);
+        if (primaries.length > 1) {
+            for (let j = 1; j < primaries.length; j++) {
+                sessions[primaries[j]].isPrimary = false;
+                changed = true;
+            }
+            continue;
+        }
+        if (primaries.length === 1) continue;
+        const allNamed = indices.filter(i => /^all$/i.test(String(sessions[i].name || "").trim()));
+        if (!allNamed.length) continue;
+        let pick = allNamed[0];
+        if (allNamed.length > 1) {
+            pick = allNamed.reduce((best, i) => _sessionBattleTotal(sessions[i]) > _sessionBattleTotal(sessions[best]) ? i : best, allNamed[0]);
+        }
+        sessions[pick].isPrimary = true;
+        changed = true;
+    }
+    return changed;
+}
+
+function toggleSessionPrimary(idx) {
+    const sessions = getSessions();
+    const s = sessions[idx];
+    if (!s) return;
+    const accId = String(s.accountId || "unknown");
+    if (s.isPrimary) {
+        s.isPrimary = false;
+    } else {
+        sessions.forEach((x, i) => {
+            if (String(x.accountId || "unknown") === accId) x.isPrimary = (i === idx);
+        });
+    }
+    saveSessions(sessions);
+    renderSessions();
+}
+
 function renderSessions() {
     const sessions = getSessions();
     let changedCfg = false;
@@ -1723,6 +1785,7 @@ function renderSessions() {
             changedCfg = true;
         }
     }
+    if (_ensureSessionPrimaryFlags(sessions)) changedCfg = true;
     if (changedCfg) saveSessions(sessions);
     const container = $("sessionsContainer");
     const empty = $("sessionEmpty");
@@ -1788,13 +1851,20 @@ function renderSessions() {
         const arBadge = ar.enabled
             ? `<span style="font-size:.68rem;color:var(--acc);border:1px solid var(--acc);border-radius:999px;padding:1px 6px;letter-spacing:.02em">AUTO ${arHuman}</span>`
             : "";
+        const primaryBadge = s.isPrimary
+            ? `<span style="font-size:.68rem;color:#c9a227;border:1px solid #c9a227;border-radius:999px;padding:1px 6px;letter-spacing:.04em" title="${t("sessPrimaryHint")}">${t("sessPrimaryBadge")}</span>`
+            : "";
 
         return `<div class="tanks-section sess-draggable" style="margin-bottom:15px" data-sess="${i}" draggable="true">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-                <div style="display:flex;align-items:center;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <span class="drag-handle" title="Drag to reorder">&#9776;</span>
                     <strong style="color:var(--acc);font-size:1rem;cursor:pointer" onclick="renameSession(${i})" title="Click to rename">${s.name}</strong>
-                    ${arBadge}
+                    ${primaryBadge}${arBadge}
+                    <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--t2);cursor:pointer" title="${t("sessPrimaryHint")}">
+                        <input type="checkbox"${s.isPrimary ? " checked" : ""} onchange="toggleSessionPrimary(${i})">
+                        <span>${t("sessPrimary")}</span>
+                    </label>
                     <span style="color:var(--t2);font-size:.8rem">${timeStr}</span>
                 </div>
                 <div style="display:flex;gap:6px">
@@ -3060,90 +3130,128 @@ function _filterAdviceTanks(recentDiffs, recentTotal) {
     });
 }
 
-function computeSessionAdvice(recentDiffs, baselineTanks, recentTotal) {
-    const oldMap = {};
-    (baselineTanks || []).forEach(tk => { oldMap[tk.tank_id] = tk; });
+function _tierDmgNorm(tier) {
+    const t = parseInt(tier, 10) || 10;
+    const scale = { 9: 0.88, 8: 0.76, 7: 0.65, 6: 0.58, 5: 0.52, 4: 0.46, 3: 0.40, 2: 0.35, 1: 0.30 };
+    return Math.round(2000 * (scale[t] || 1));
+}
+
+function _adviceClassLabel(type) {
+    return t(TYPE_KEY[type] || type || "?");
+}
+
+function _aggregateAdviceByClass(recentDiffs) {
+    const byClass = {};
+    for (const d of recentDiffs || []) {
+        if ((d.battles || 0) < 2) continue;
+        const cls = d.tank_type || "?";
+        if (!byClass[cls]) byClass[cls] = { battles: 0, wins: 0, damage: 0 };
+        byClass[cls].battles += d.battles;
+        byClass[cls].wins += d.wins;
+        byClass[cls].damage += d.damage_dealt;
+    }
+    return Object.entries(byClass)
+        .filter(([, v]) => v.battles >= 8)
+        .map(([cls, v]) => ({ cls, wr: v.wins / v.battles * 100, battles: v.battles, avgDmg: v.damage / v.battles }))
+        .sort((a, b) => b.wr - a.wr);
+}
+
+function computeSessionAdvice(recentDiffs, recentTotal) {
     const eligible = _filterAdviceTanks(recentDiffs || [], recentTotal || 0);
     const tips = [];
+    if (!eligible.length) return tips;
+
+    let peerWr = 0, peerDmgR = 0, peerW = 0;
+    for (const d of eligible) {
+        const w = d.battles;
+        peerWr += (d.wins / d.battles * 100) * w;
+        peerDmgR += ((d.damage_dealt / d.battles) / _tierDmgNorm(d.tank_tier)) * w;
+        peerW += w;
+    }
+    const sessAvgWr = peerW > 0 ? peerWr / peerW : 50;
+    const sessAvgDmgR = peerW > 0 ? peerDmgR / peerW : 1;
+
+    const classStats = _aggregateAdviceByClass(recentDiffs);
+    if (classStats.length >= 2) {
+        const best = classStats[0];
+        const worst = classStats[classStats.length - 1];
+        if (worst.wr < 36 && worst.battles >= 10 && best.wr >= worst.wr + 12 && best.battles >= 6) {
+            tips.push({
+                severity: "tip",
+                key: "sessAdvClassSwitch",
+                vars: {
+                    class: _adviceClassLabel(worst.cls),
+                    battles: String(worst.battles),
+                    wr: worst.wr.toFixed(0),
+                    altClass: _adviceClassLabel(best.cls),
+                    altWr: best.wr.toFixed(0)
+                },
+                score: 55 + (36 - worst.wr),
+                d: null
+            });
+        }
+    }
 
     for (const d of eligible) {
-        const base = oldMap[d.tank_id];
-        if (!base?.all) continue;
-        const ob = base.all.battles || 0;
-        if (ob < 8) continue;
-
         const sessWR = d.wins / d.battles * 100;
-        const normWR = base.all.wins / ob * 100;
-        if (normWR < 4 || normWR > 96) continue;
-
         const sessDmg = d.damage_dealt / d.battles;
-        const normDmg = base.all.damage_dealt / ob;
-        const sessSurv = (d.survived || 0) / d.battles * 100;
-        const normSurv = (base.all.survived_battles || 0) / ob * 100;
-        const wrDelta = sessWR - normWR;
-        const dmgRatio = normDmg > 0 ? sessDmg / normDmg : 1;
+        const tierNorm = _tierDmgNorm(d.tank_tier);
+        const dmgRatio = tierNorm > 0 ? sessDmg / tierNorm : 1;
         const dmgPct = Math.round(dmgRatio * 100);
-        const survDelta = sessSurv - normSurv;
-        const conf = _adviceConfidence(d.battles, ob);
-        const wrBand = _adviceWrBand(normWR, ob);
-        const perfUnder = _advicePerfIndex(wrDelta, dmgRatio, survDelta);
-        const perfOver = _advicePerfIndex(-wrDelta, 2 - dmgRatio, -survDelta);
+        const sessSurv = (d.survived || 0) / d.battles * 100;
+        const wrVsPeer = sessWR - sessAvgWr;
+        const conf = Math.min(1, Math.max(0, (d.battles - 2) / 6));
 
         const vars = {
             tank: d.tank_name || "?",
             battles: String(d.battles),
             wr: sessWR.toFixed(0),
-            normWr: normWR.toFixed(0),
+            tier: TIER_ROMAN[d.tank_tier] || String(d.tank_tier || "?"),
+            avgDmg: Math.round(sessDmg).toLocaleString(),
             dmgPct: String(dmgPct),
             surv: sessSurv.toFixed(0),
-            normSurv: normSurv.toFixed(0)
+            normWr: sessAvgWr.toFixed(0)
         };
 
-        const wrSig = -wrDelta / wrBand;
         let tip = null;
-
-        const switchNeed = 36 + (1 - conf) * 22 + (ob < 20 ? 14 : ob < 35 ? 7 : 0);
-        const switchSoftNeed = 20 + (1 - conf) * 16 + (d.battles < 4 ? 10 : 0);
-        const hotNeed = 26 + (1 - conf) * 10;
-        const slightCap = 14 + (1 - conf) * 10;
-
-        if (perfUnder >= switchNeed && wrSig >= 0.85 && dmgRatio < 0.9) {
-            const hardOk = d.battles >= 5 && conf >= 0.38;
-            const key = hardOk ? "sessAdvSwitch" : "sessAdvSwitchSoft";
-            tip = { severity: hardOk ? "warn" : "tip", key, vars, score: perfUnder + 50, d };
-        } else if (perfUnder >= switchSoftNeed && wrSig >= 0.5 && (dmgRatio < 0.93 || wrDelta <= -wrBand * 0.65)) {
-            tip = { severity: "tip", key: "sessAdvSwitchSoft", vars, score: perfUnder + 20, d };
-        } else if (d.battles <= 4 && perfUnder >= 42 && wrSig >= 1.1 && wrDelta < 0) {
-            tip = { severity: "tip", key: "sessAdvSwitchSoft", vars, score: perfUnder + 15, d };
-        } else if (perfUnder >= slightCap && perfUnder < switchSoftNeed && d.battles <= 5 && wrDelta < 0) {
-            tip = { severity: "hint", key: "sessAdvSlight", vars, score: perfUnder, d };
-        } else if (survDelta >= 10 && dmgRatio < 0.76 && perfUnder < switchSoftNeed && wrDelta > -wrBand) {
-            tip = { severity: "tip", key: "sessAdvBold", vars, score: 30 + survDelta, d };
-        } else if (survDelta <= -10 && dmgRatio < 0.8 && perfUnder >= 18) {
-            tip = { severity: conf >= 0.4 ? "warn" : "tip", key: "sessAdvSafe", vars, score: 28 + perfUnder * 0.5, d };
-        } else if (survDelta <= -8 && dmgRatio >= 0.9 && wrDelta <= -5 && perfUnder >= 12) {
+        if (sessWR < 38 && dmgRatio < 0.78 && d.battles >= 4 && conf >= 0.25) {
+            tip = { severity: sessWR < 32 ? "warn" : "tip", key: "sessAdvSwitch", vars, score: 50 + (38 - sessWR), d };
+        } else if (sessWR < 42 && wrVsPeer < -10 && dmgRatio < 0.85 && d.battles >= 4) {
+            tip = { severity: "tip", key: "sessAdvSwitchSoft", vars, score: 35, d };
+        } else if (sessWR >= 52 && dmgRatio >= 0.88 && d.battles >= 4 && wrVsPeer >= -5) {
+            tip = { severity: "good", key: "sessAdvHot", vars, score: -30 - sessWR, d };
+        } else if (sessSurv >= 55 && dmgRatio < 0.72 && sessWR >= 45) {
+            tip = { severity: "tip", key: "sessAdvBold", vars, score: 25, d };
+        } else if (sessSurv <= 35 && dmgRatio < 0.8 && sessWR < 48) {
+            tip = { severity: "tip", key: "sessAdvSafe", vars, score: 28, d };
+        } else if (sessWR < 40 && dmgRatio >= 0.85 && sessSurv <= 40) {
             tip = { severity: "tip", key: "sessAdvRisky", vars, score: 22, d };
-        } else if (perfOver >= hotNeed && wrDelta >= 6 && dmgRatio >= 0.93) {
-            tip = { severity: "good", key: "sessAdvHot", vars, score: -perfOver, d };
+        } else if (sessWR < 45 && wrVsPeer < -8 && d.battles <= 5) {
+            tip = { severity: "hint", key: "sessAdvSlight", vars, score: 12, d };
         }
-
         if (tip) tips.push(tip);
     }
 
     tips.sort((a, b) => b.score - a.score);
     const seen = new Set();
     const out = [];
-    for (const t of tips) {
-        const id = t.d.tank_id || t.d.tank_name;
+    for (const tip of tips) {
+        const id = tip.d ? (tip.d.tank_id || tip.d.tank_name) : ("cls:" + tip.key);
         if (seen.has(id)) continue;
         seen.add(id);
-        out.push(t);
+        out.push(tip);
         if (out.length >= 3) break;
     }
     return out;
 }
 
 function renderSessionAdvice(sess) {
+    if (sess.isPrimary) {
+        return `<div class="sess-advice">
+            <div style="font-size:.78rem;color:var(--t2);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">${t("sessAdviceTitle")}</div>
+            <div class="sess-advice-item sess-advice-hint"><span>${t("sessAdvicePrimarySkip")}</span></div>
+        </div>`;
+    }
     const { diffs: recent, window, totalNow, needRefresh, sinceRefresh } = getRecentSessionDiffs(sess);
     if (needRefresh && totalNow > 80) {
         return `<div class="sess-advice">
@@ -3152,7 +3260,7 @@ function renderSessionAdvice(sess) {
         </div>`;
     }
     const recentTotal = recent.reduce((s, d) => s + d.battles, 0);
-    const tips = computeSessionAdvice(recent, sess.tanks, recentTotal);
+    const tips = computeSessionAdvice(recent, recentTotal);
     if (!tips.length) return "";
     const cls = { warn: "sess-advice-warn", tip: "sess-advice-tip", good: "sess-advice-good", hint: "sess-advice-hint" };
     const recentLabel = recentTotal > 0 && (sinceRefresh || totalNow > window)
@@ -3162,7 +3270,7 @@ function renderSessionAdvice(sess) {
         <div style="font-size:.78rem;color:var(--t2);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">${t("sessAdviceTitle")}</div>
         ${recentLabel}
         ${tips.map(tip => {
-            const img = tip.d.tank_image ? `<img src="${tip.d.tank_image}" alt="" style="width:28px;height:auto;border-radius:2px;flex-shrink:0;margin-top:1px">` : "";
+            const img = tip.d?.tank_image ? `<img src="${tip.d.tank_image}" alt="" style="width:28px;height:auto;border-radius:2px;flex-shrink:0;margin-top:1px">` : "";
             return `<div class="sess-advice-item ${cls[tip.severity] || ""}">${img}<span>${fmtAdvice(t(tip.key), tip.vars)}</span></div>`;
         }).join("")}
         <div style="font-size:.72rem;color:var(--t2);margin-top:2px;opacity:.85">${t("sessAdviceNote")}</div>
