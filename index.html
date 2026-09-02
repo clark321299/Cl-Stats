@@ -367,6 +367,10 @@
                     <select id="sessAutoInterval" style="padding:4px 6px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.8rem;margin:4px 0 8px 0;display:none">
                         <option value="60">1 min</option><option value="180" selected>3 min</option><option value="300">5 min</option><option value="600">10 min</option>
                     </select>
+                    <label>
+                        <input type="checkbox" id="sessAutoHideInactive"> <span data-i18n="sessAutoHideInactive"></span>
+                    </label>
+                    <div style="font-size:.72rem;color:var(--t2);opacity:.85;margin:2px 0 6px" data-i18n="sessAutoHideInactiveHint"></div>
                     <div class="sess-settings-divider"></div>
                     <div style="font-size:.78rem;color:var(--t2);margin:6px 0" data-i18n="sessGroupOpenHint"></div>
                     <div id="sessAccountOpenPrefs"></div>
@@ -495,6 +499,8 @@ const LANG = {
         sessAdviceTitle:"Попередження",sessAdviceNote:"При частій зміні танків — попередження по класу. Інакше — по танку; кулдаун ~20 б. на іншому класі/танках.",
         sessSettings:"Налаштування сесії",sessGlobalSettingsTitle:"Налаштування сесій",sessGroupOpenHint:"Які акаунти тримати розгорнутими:",
         sessGroupOpen:"Розгорнутий",sessRename:"Перейменувати",
+        sessAutoHideInactive:"Ховати неактивні акаунти",
+        sessAutoHideInactiveHint:"Після оновлення розгортає лише акаунти з новими боями (або відкритий профіль).",
         sessAdviceRecent:"З останнього оновлення (~{n} б.)",sessAdviceRecentWin:"За останні ~{n} боїв",sessAdviceNeedRefresh:"На цій сесії занадто багато боїв без знімків. Натисни «Оновити» ще раз після кількох нових боїв — тоді поради рахуватимуть лише останню гру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, шкода ~{dmgPct}% від норми {tier} — зміни танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабше за інші в вибірці (~{normWr}%). Зміни танк.",
@@ -615,6 +621,8 @@ const LANG = {
         sessAdviceTitle:"Предупреждения",sessAdviceNote:"При частой смене танков — по классу. Иначе — по танку; кулдаун ~20 б. на другом классе/танках.",
         sessSettings:"Настройки сессии",sessGlobalSettingsTitle:"Настройки сессий",sessGroupOpenHint:"Какие аккаунты держать развёрнутыми:",
         sessGroupOpen:"Развёрнут",sessRename:"Переименовать",
+        sessAutoHideInactive:"Скрывать неактивные аккаунты",
+        sessAutoHideInactiveHint:"После обновления разворачивает только аккаунты с новыми боями (или открытый профиль).",
         sessAdviceRecent:"С последнего обновления (~{n} б.)",sessAdviceRecentWin:"За последние ~{n} боёв",sessAdviceNeedRefresh:"На этой сессии слишком много боёв без снимков. Нажми «Обновить» ещё раз после нескольких новых боёв — советы будут только за последнюю игру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, урон ~{dmgPct}% от нормы {tier} — смени танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабее других в выборке (~{normWr}%). Смени танк.",
@@ -733,6 +741,8 @@ const LANG = {
         sessAdviceTitle:"Warnings",sessAdviceNote:"Frequent tank swaps → class warnings. Otherwise per-tank; ~20 bt cooldown on other class/tanks.",
         sessSettings:"Session settings",sessGlobalSettingsTitle:"Session settings",sessGroupOpenHint:"Keep these accounts expanded:",
         sessGroupOpen:"Expanded",sessRename:"Rename",
+        sessAutoHideInactive:"Hide inactive accounts",
+        sessAutoHideInactiveHint:"After refresh, expands only accounts with new battles (or the open profile).",
         sessAdviceRecent:"Since last refresh (~{n} bt.)",sessAdviceRecentWin:"Last ~{n} battles",sessAdviceNeedRefresh:"Too many battles without snapshots. Press Refresh again after a few new battles — tips will use recent play only.",
         sessAdvSwitch:"{tank} ({battles} bt): WR {wr}%, damage ~{dmgPct}% of tier {tier} norm — switch tank.",
         sessAdvSwitchSoft:"{tank} ({battles} bt): WR {wr}% — weaker than others in window (~{normWr}%). Switch tank.",
@@ -851,6 +861,8 @@ const LANG = {
         sessAdviceTitle:"Ogohlantirishlar",sessAdviceNote:"Tez-tez tank almashtirsang — klass bo'yicha. Aks holda tank; ~20 j. boshqa klass/tanklarda kutish.",
         sessSettings:"Sessiya sozlamalari",sessGlobalSettingsTitle:"Sessiyalar sozlamalari",sessGroupOpenHint:"Qaysi hisoblarni ochiq saqlash:",
         sessGroupOpen:"Ochiq",sessRename:"Nomini o'zgartirish",
+        sessAutoHideInactive:"Nofaol hisoblarni yashirish",
+        sessAutoHideInactiveHint:"Yangilashdan keyin faqat yangi janglari bor hisoblarni ochadi (yoki ochiq profil).",
         sessAdviceRecent:"Oxirgi yangilashdan (~{n} j.)",sessAdviceRecentWin:"So'nggi ~{n} jang",sessAdviceNeedRefresh:"Juda ko'p jang, snapshot yo'q. Bir necha jangdan keyin yana «Yangilash» bosing — maslahatlar faqat so'nggi o'yin uchun.",
         sessAdvSwitch:"{tank} ({battles} j.): WR {wr}%, zarar ~{dmgPct}% {tier} normasidan — tankni almashtiring.",
         sessAdvSwitchSoft:"{tank} ({battles} j.): WR {wr}% — tanlovda boshqalardan past (~{normWr}%). Tankni almashtiring.",
@@ -1380,6 +1392,8 @@ async function loadPlayer(accountId, nickname) {
             displayCharts(tanks);
             syncAccountSessions(accountId, tanks);
         }
+        focusAccountGroupForPlayer(accountId);
+        if (localStorage.getItem("clstats_autohide_inactive") === "1") renderSessions();
     } catch (err) {
         console.error("Error:", err);
         $("lastBattle").textContent = t("errorData");
@@ -2130,13 +2144,13 @@ async function startSession() {
     renderSessions();
 }
 
-async function refreshSession(idx) {
+async function refreshSession(idx, opts = {}) {
     const sessions = getSessions();
     const sess = sessions[idx];
     if (!sess) return;
 
     const [tanksData, tankInfo] = await Promise.all([ api("tanks/stats", { account_id: sess.accountId }), getTankInfo() ]);
-    if (tanksData.status !== "ok") { alert(t("errorData")); return; }
+    if (tanksData.status !== "ok") { if (!opts.silent) alert(t("errorData")); return; }
 
     let cur = tanksData.data[String(sess.accountId)] || [];
     enrichTanks(cur, tankInfo);
@@ -2166,7 +2180,59 @@ async function refreshSession(idx) {
     }
 
     saveSessions(sessions);
-    renderSessions();
+    if (!opts.skipRender) {
+        applyAutoHideInactiveAccounts();
+        renderSessions();
+    }
+}
+
+function _sessBattlesNow(sess) {
+    return (sess.diffs || []).reduce((s, d) => s + (d.battles || 0), 0);
+}
+
+function applyAutoHideInactiveAccounts(activeAccountIds) {
+    if (localStorage.getItem("clstats_autohide_inactive") !== "1") return;
+    const sessions = getSessions();
+    if (!sessions.length) return;
+
+    const allIds = [...new Set(sessions.map(s => String(s.accountId || "unknown")))];
+    let active = new Set((activeAccountIds || []).map(String));
+
+    if (!active.size && currentAccountId) active.add(String(currentAccountId));
+    if (!active.size) return;
+
+    allIds.forEach(id => setSessGroupOpen(id, active.has(id)));
+}
+
+function focusAccountGroupForPlayer(accountId) {
+    if (!accountId || localStorage.getItem("clstats_autohide_inactive") !== "1") return;
+    applyAutoHideInactiveAccounts([accountId]);
+}
+
+async function refreshAllSessions() {
+    if (isRefreshing) return;
+    isRefreshing = true;
+    try {
+        const sessions = getSessions();
+        const before = sessions.map(s => ({ acc: String(s.accountId || "unknown"), b: _sessBattlesNow(s) }));
+        for (let i = 0; i < sessions.length; i++) {
+            await refreshSession(i, { skipRender: true, silent: true });
+        }
+        const after = getSessions();
+        const gained = new Set();
+        after.forEach((s, i) => {
+            const prev = before[i];
+            if (!prev) return;
+            if (_sessBattlesNow(s) > prev.b) gained.add(String(s.accountId || "unknown"));
+        });
+        if (gained.size) applyAutoHideInactiveAccounts([...gained]);
+        else if (currentAccountId) applyAutoHideInactiveAccounts([currentAccountId]);
+        renderSessions();
+    } catch (e) {
+        console.error("Auto-refresh error:", e);
+        renderSessions();
+    }
+    isRefreshing = false;
 }
 
 function buildSessionDiffs(baselineTanks, curTanks) {
@@ -2254,18 +2320,6 @@ function syncAccountSessions(accountId, curTanks, opts = {}) {
     return changed;
 }
 
-async function refreshAllSessions() {
-    if (isRefreshing) return;
-    isRefreshing = true;
-    try {
-        const sessions = getSessions();
-        for (let i = 0; i < sessions.length; i++) {
-            await refreshSession(i);
-        }
-    } catch(e) { console.error("Auto-refresh error:", e); }
-    isRefreshing = false;
-}
-
 // Auto-refresh
 let autoRefreshTimer = null;
 let isRefreshing = false;
@@ -2274,10 +2328,21 @@ function setupAutoRefresh() {
     const cb = $("sessAutoRefresh");
     const sel = $("sessAutoInterval");
     const expand = $("sessAutoExpand");
+    const hideInactive = $("sessAutoHideInactive");
     if (expand) {
         expand.checked = localStorage.getItem("clstats_autoexpand") === "1";
         expand.addEventListener("change", () => {
             localStorage.setItem("clstats_autoexpand", expand.checked ? "1" : "0");
+        });
+    }
+    if (hideInactive) {
+        hideInactive.checked = localStorage.getItem("clstats_autohide_inactive") === "1";
+        hideInactive.addEventListener("change", () => {
+            localStorage.setItem("clstats_autohide_inactive", hideInactive.checked ? "1" : "0");
+            if (hideInactive.checked && currentAccountId) {
+                applyAutoHideInactiveAccounts([currentAccountId]);
+                renderSessions();
+            }
         });
     }
     if (!cb) return;
