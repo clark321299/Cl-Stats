@@ -893,9 +893,10 @@ function renderProfiles() {
 }
 
 // ==================== INIT ====================
-window.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("DOMContentLoaded", async () => {
     applyTheme(localStorage.getItem("clstats_theme") || "dark");
     setLang(localStorage.getItem("clstats_lang") || "uk");
+    await loadTankDisplayNames();
 
     // Tier filter options
     const tf = $("tierFilter");
@@ -1050,6 +1051,17 @@ function tankDisplayName(wgName, tankId) {
     return base;
 }
 
+/** Перевірити назву з бібліотеки (навіть якщо diff збережено до оновлення tank_names.json). */
+function resolveStoredTankName(d) {
+    const tid = d.tank_id != null ? String(d.tank_id) : "";
+    const cached = String(d.tank_name || "").trim();
+    const stale = !cached || cached === "?" || cached.startsWith("#") || /^\d+$/.test(cached);
+    const wg = stale ? (tankDisplayLookup.byTankId[tid] || cached) : cached;
+    const resolved = tankDisplayName(wg, d.tank_id);
+    if (resolved && resolved !== "—") return resolved;
+    return cached && !cached.startsWith("#") ? cached : (tid ? `#${tid}` : "?");
+}
+
 async function getTankInfo() {
     if (Object.keys(tankInfoCache).length > 0) {
         if (!Object.keys(tankDisplayLookup.byTankId || {}).length) {
@@ -1160,8 +1172,7 @@ async function loadPlayer(accountId, nickname) {
 function enrichTanks(tanks, tankInfo) {
     tanks.forEach(t => {
         const info = tankInfo[String(t.tank_id)] || {};
-        const wg = info.name || tankDisplayLookup.byTankId[String(t.tank_id)] || "";
-        t.tank_name = tankDisplayName(wg, t.tank_id) || (wg ? wg : `#${t.tank_id}`);
+        t.tank_name = resolveStoredTankName({ tank_id: t.tank_id, tank_name: info.name || tankDisplayLookup.byTankId[String(t.tank_id)] || "" });
         t.tank_tier = info.tier || 0;
         t.tank_type = info.type || "";
         t.tank_nation = info.nation || "unknown";
@@ -1931,7 +1942,7 @@ function renderSessionRows(diffs, sortField, sortDir) {
         const nc = d.is_premium ? "premium" : "";
         const img = d.tank_image ? `<img src="${d.tank_image}" alt="" loading="lazy">` : "";
         return `<tr>
-            <td><div class="tank-name-cell">${img}<span class="${nc}">${d.tank_name || "?"}</span></div></td>
+            <td><div class="tank-name-cell">${img}<span class="${nc}">${resolveStoredTankName(d)}</span></div></td>
             <td>${TIER_ROMAN[d.tank_tier] || d.tank_tier}</td>
             <td>${t(TYPE_KEY[d.tank_type] || "") || "?"}</td>
             <td>${d.battles}</td><td>${d.wins}</td>
