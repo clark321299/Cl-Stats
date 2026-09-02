@@ -490,6 +490,8 @@ const LANG = {
         mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
         sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
         sessPrimary:"Основна (за весь час)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на акаунт — загальна статистика без попереджень (лише Day/Week).",
+        sessPrimaryActive:"Основна: «{name}»",
+        sessPrimaryMoveHint:"Якщо поставите — зніметься з «{name}» (основна лише одна).",
         sessAdviceTitle:"Попередження",sessAdviceNote:"При частій зміні танків — попередження по класу. Інакше — по танку; кулдаун ~20 б. на іншому класі/танках.",
         sessSettings:"Налаштування сесії",sessGlobalSettingsTitle:"Налаштування сесій",sessGroupOpenHint:"Які акаунти тримати розгорнутими:",
         sessGroupOpen:"Розгорнутий",sessRename:"Перейменувати",
@@ -608,6 +610,8 @@ const LANG = {
         mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
         sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
         sessPrimary:"Основная (за всё время)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на аккаунт — общая статистика без предупреждений (только Day/Week).",
+        sessPrimaryActive:"Основная: «{name}»",
+        sessPrimaryMoveHint:"Если поставите — снимется с «{name}» (основная только одна).",
         sessAdviceTitle:"Предупреждения",sessAdviceNote:"При частой смене танков — по классу. Иначе — по танку; кулдаун ~20 б. на другом классе/танках.",
         sessSettings:"Настройки сессии",sessGlobalSettingsTitle:"Настройки сессий",sessGroupOpenHint:"Какие аккаунты держать развёрнутыми:",
         sessGroupOpen:"Развёрнут",sessRename:"Переименовать",
@@ -724,6 +728,8 @@ const LANG = {
         mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
         sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
         sessPrimary:"Primary (all-time)",sessPrimaryBadge:"ALL",sessPrimaryHint:"One per account — lifetime stats, no warnings (Day/Week only).",
+        sessPrimaryActive:"Primary: “{name}”",
+        sessPrimaryMoveHint:"Checking this will clear it from “{name}” (only one primary).",
         sessAdviceTitle:"Warnings",sessAdviceNote:"Frequent tank swaps → class warnings. Otherwise per-tank; ~20 bt cooldown on other class/tanks.",
         sessSettings:"Session settings",sessGlobalSettingsTitle:"Session settings",sessGroupOpenHint:"Keep these accounts expanded:",
         sessGroupOpen:"Expanded",sessRename:"Rename",
@@ -840,6 +846,8 @@ const LANG = {
         mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
         sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
         sessPrimary:"Asosiy (butun vaqt)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Har hisobda bitta — umumiy stat, ogohlantirishsiz (faqat Day/Week).",
+        sessPrimaryActive:"Asosiy: «{name}»",
+        sessPrimaryMoveHint:"Belgilasangiz — «{name}» dan olinadi (asosiy faqat bitta).",
         sessAdviceTitle:"Ogohlantirishlar",sessAdviceNote:"Tez-tez tank almashtirsang — klass bo'yicha. Aks holda tank; ~20 j. boshqa klass/tanklarda kutish.",
         sessSettings:"Sessiya sozlamalari",sessGlobalSettingsTitle:"Sessiyalar sozlamalari",sessGroupOpenHint:"Qaysi hisoblarni ochiq saqlash:",
         sessGroupOpen:"Ochiq",sessRename:"Nomini o'zgartirish",
@@ -1837,12 +1845,7 @@ function renderSessions() {
     empty.classList.add("hidden");
 
     const autoExpand = $("sessAutoExpand") && $("sessAutoExpand").checked;
-
-    // Save expanded account groups
-    const expandedGroups = new Set();
-    container.querySelectorAll("details.sess-group").forEach(det => {
-        if (det.open) expandedGroups.add(det.dataset.accId);
-    });
+    const globalSettingsWasOpen = !!($("sessGlobalSettings") && $("sessGlobalSettings").classList.contains("open"));
 
     // Group sessions by account
     const groups = [];
@@ -1855,6 +1858,22 @@ function renderSessions() {
         }
         groupMap[key].indices.push(i);
     });
+
+    const openMap = getSessGroupOpenMap();
+    const isGroupOpen = (accountId) => {
+        const key = String(accountId);
+        return Object.prototype.hasOwnProperty.call(openMap, key) ? !!openMap[key] : true;
+    };
+
+    const otherPrimaryName = (sess, idx) => {
+        const accId = String(sess.accountId || "unknown");
+        for (let j = 0; j < sessions.length; j++) {
+            if (j === idx) continue;
+            const o = sessions[j];
+            if (o.isPrimary && String(o.accountId || "unknown") === accId) return o.name || "?";
+        }
+        return "";
+    };
 
     const renderCard = (s, i) => {
         const d = new Date(s.startTime);
@@ -1886,6 +1905,13 @@ function renderSessions() {
             ? `<span style="font-size:.68rem;color:#c9a227;border:1px solid #c9a227;border-radius:999px;padding:1px 6px;letter-spacing:.04em" title="${t("sessPrimaryHint")}">${t("sessPrimaryBadge")}</span>`
             : "";
         const settingsOpen = !!(s.settingsUiOpen || s.autoResetUiOpen);
+        const otherPrim = otherPrimaryName(s, i);
+        const primaryLabel = s.isPrimary
+            ? fmtAdvice(t("sessPrimaryActive"), { name: s.name || "?" })
+            : t("sessPrimary");
+        const primaryHint = (!s.isPrimary && otherPrim)
+            ? `<div style="font-size:.7rem;color:var(--t2);margin-top:2px;opacity:.9">${fmtAdvice(t("sessPrimaryMoveHint"), { name: otherPrim })}</div>`
+            : "";
 
         return `<div class="tanks-section sess-draggable" style="margin-bottom:15px" data-sess="${i}" draggable="true">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -1907,10 +1933,13 @@ function renderSessions() {
                     <button class="btn btn-danger btn-sm" onclick="deleteSession(${i})">${t("sessionStop")}</button>
                 </div>
                 <div class="sess-settings-divider"></div>
-                <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--t2);cursor:pointer" title="${t("sessPrimaryHint")}">
-                    <input type="checkbox"${s.isPrimary ? " checked" : ""} onchange="toggleSessionPrimary(${i})">
-                    <span>${t("sessPrimary")}</span>
-                </label>
+                <div>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--t2);cursor:pointer" title="${t("sessPrimaryHint")}">
+                        <input type="checkbox"${s.isPrimary ? " checked" : ""} onchange="toggleSessionPrimary(${i})">
+                        <span>${primaryLabel}</span>
+                    </label>
+                    ${primaryHint}
+                </div>
                 <div class="sess-settings-divider"></div>
                 <div class="sess-settings-row">
                     <label style="display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--t2);cursor:pointer">
@@ -1958,16 +1987,19 @@ function renderSessions() {
         </div>`;
     };
 
-    const openMap = getSessGroupOpenMap();
     if (groups.length === 1) {
-        container.innerHTML = groups[0].indices.map(i => renderCard(sessions[i], i)).join("");
+        // Still wrap so top ⚙ account prefs can collapse even with one account group
+        const g = groups[0];
+        const isOpen = isGroupOpen(g.accountId);
+        container.innerHTML = `<details class="sess-group" data-acc-id="${g.accountId}"${isOpen ? " open" : ""} style="margin-bottom:12px">
+            <summary style="cursor:pointer;font-size:1.05rem;font-weight:600;color:var(--acc);padding:8px 0;display:flex;align-items:center;gap:8px">
+                ${g.nick} <span style="color:var(--t2);font-weight:400;font-size:.85rem">(${g.indices.length})</span>
+            </summary>
+            ${g.indices.map(i => renderCard(sessions[i], i)).join("")}
+        </details>`;
     } else {
         container.innerHTML = groups.map((g, gi) => {
-            const key = String(g.accountId);
-            let isOpen;
-            if (expandedGroups.size > 0) isOpen = expandedGroups.has(key);
-            else if (Object.prototype.hasOwnProperty.call(openMap, key)) isOpen = !!openMap[key];
-            else isOpen = true;
+            const isOpen = isGroupOpen(g.accountId);
             return `<details class="sess-group" data-acc-id="${g.accountId}"${isOpen ? " open" : ""} style="margin-bottom:12px">
                 <summary style="cursor:pointer;font-size:1.05rem;font-weight:600;color:var(--acc);padding:8px 0;display:flex;align-items:center;gap:8px">
                     ${g.nick} <span style="color:var(--t2);font-weight:400;font-size:.85rem">(${g.indices.length})</span>
@@ -1983,11 +2015,18 @@ function renderSessions() {
 
     container.querySelectorAll("details.sess-group").forEach(det => {
         det.addEventListener("toggle", () => {
+            if (window._sessGroupSyncing) return;
             setSessGroupOpen(det.dataset.accId, det.open);
-            renderSessAccountOpenPrefs();
+            if ($("sessGlobalSettings")?.classList.contains("open")) renderSessAccountOpenPrefs();
         });
     });
-    renderSessAccountOpenPrefs();
+    if (globalSettingsWasOpen) {
+        const panel = $("sessGlobalSettings");
+        if (panel) panel.classList.add("open");
+        renderSessAccountOpenPrefs();
+    } else {
+        renderSessAccountOpenPrefs();
+    }
 
     // Attach sort click handlers to session table headers
     container.querySelectorAll("th.sortable[data-ssort]").forEach(th => {
@@ -2404,12 +2443,20 @@ function renderSessAccountOpenPrefs() {
     const openMap = getSessGroupOpenMap();
     box.innerHTML = [...seen.entries()].map(([id, nick]) => {
         const checked = Object.prototype.hasOwnProperty.call(openMap, id) ? !!openMap[id] : true;
-        return `<label><input type="checkbox" data-group-open="${id}"${checked ? " checked" : ""}> <span>${nick}</span> <span style="opacity:.7">(${t("sessGroupOpen")})</span></label>`;
+        return `<label style="user-select:none"><input type="checkbox" data-group-open="${id}"${checked ? " checked" : ""}> <span>${nick}</span> <span style="opacity:.7">(${t("sessGroupOpen")})</span></label>`;
     }).join("");
     box.querySelectorAll("[data-group-open]").forEach(el => {
         el.addEventListener("change", () => {
-            setSessGroupOpen(el.getAttribute("data-group-open"), el.checked);
-            renderSessions();
+            const id = String(el.getAttribute("data-group-open"));
+            setSessGroupOpen(id, el.checked);
+            window._sessGroupSyncing = true;
+            try {
+                document.querySelectorAll("details.sess-group").forEach(det => {
+                    if (String(det.dataset.accId) === id) det.open = el.checked;
+                });
+            } finally {
+                window._sessGroupSyncing = false;
+            }
         });
     });
 }
