@@ -160,6 +160,15 @@
         .sess-advice-warn{border-color:#e74c3c66;background:rgba(231,76,60,.06)}
         .sess-advice-tip{border-color:#f5a62366;background:rgba(245,166,35,.06)}
         .sess-advice-hint{border-color:#5cc9e866;background:rgba(92,201,232,.05)}
+        .sess-settings-panel{display:none;flex-direction:column;gap:10px;margin:0 0 12px;padding:12px;border:1px solid var(--brd);border-radius:10px;background:var(--bg3)}
+        .sess-settings-panel.open{display:flex}
+        .sess-settings-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+        .sess-settings-row .btn{white-space:nowrap}
+        .sess-settings-divider{height:1px;background:var(--brd);margin:2px 0}
+        .sess-global-settings{display:none;margin:0 0 12px;padding:12px;border:1px solid var(--brd);border-radius:10px;background:var(--bg3)}
+        .sess-global-settings.open{display:block}
+        .sess-global-settings label{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--t2);cursor:pointer;margin:4px 0}
+        .sess-gear-btn{min-width:32px;font-size:1rem;line-height:1}
         #helpContent h4{color:var(--acc);margin:18px 0 6px;font-size:.95rem}
         #helpContent h4:first-child{margin-top:0}
         #helpContent p{color:var(--t1);font-size:.88rem;margin-bottom:8px}
@@ -345,15 +354,22 @@
                     <input type="text" id="sessionName" data-i18n-placeholder="sessionNamePlaceholder" style="padding:7px 12px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.85rem;outline:none;width:180px">
                     <button class="btn btn-sm" onclick="startSession()" data-i18n="sessionStart"></button>
                     <button class="btn btn-secondary btn-sm" onclick="refreshAllSessions()" data-i18n="sessionRefreshAll"></button>
-                    <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer;margin-left:8px">
+                    <button class="btn btn-ghost btn-sm sess-gear-btn" id="sessGlobalSettingsBtn" onclick="toggleSessGlobalSettings()" title="">&#9881;</button>
+                </div>
+                <div id="sessGlobalSettings" class="sess-global-settings">
+                    <div style="font-size:.78rem;color:var(--t2);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em" data-i18n="sessGlobalSettingsTitle"></div>
+                    <label>
                         <input type="checkbox" id="sessAutoExpand"> <span data-i18n="sessAutoExpand"></span>
                     </label>
-                    <label style="display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--t2);cursor:pointer;margin-left:8px">
+                    <label>
                         <input type="checkbox" id="sessAutoRefresh"> <span data-i18n="sessAutoRefresh"></span>
                     </label>
-                    <select id="sessAutoInterval" style="padding:4px 6px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.8rem;display:none">
+                    <select id="sessAutoInterval" style="padding:4px 6px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.8rem;margin:4px 0 8px 0;display:none">
                         <option value="60">1 min</option><option value="180" selected>3 min</option><option value="300">5 min</option><option value="600">10 min</option>
                     </select>
+                    <div class="sess-settings-divider"></div>
+                    <div style="font-size:.78rem;color:var(--t2);margin:6px 0" data-i18n="sessGroupOpenHint"></div>
+                    <div id="sessAccountOpenPrefs"></div>
                 </div>
                 <div id="sessionsContainer"></div>
                 <div id="sessionEmpty" class="no-session">
@@ -473,9 +489,10 @@ const LANG = {
         mapsResultWin:"Перемога",mapsResultLoss:"Поразка",mapsResultDraw:"Нічия",mapsResultUnknown:"—",
         mapsEmpty:"Боїв ще не зафіксовано. Журнал заповнюється автоматично після кожного бою.",
         sessBestTank:"🏆 Кращий танк",sessWorstTank:"💀 Гірший танк",
-        sessPrimary:"Основна (за весь час)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на акаунт — загальна статистика без порад.",
+        sessPrimary:"Основна (за весь час)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на акаунт — загальна статистика без попереджень (лише Day/Week).",
         sessAdviceTitle:"Попередження",sessAdviceNote:"При частій зміні танків — попередження по класу. Інакше — по танку; кулдаун ~20 б. на іншому класі/танках.",
-        sessAdvicePrimarySkip:"Поради вимкнено — це основна сесія. Дивись Day/Week для підказок під час гри.",
+        sessSettings:"Налаштування сесії",sessGlobalSettingsTitle:"Налаштування сесій",sessGroupOpenHint:"Які акаунти тримати розгорнутими:",
+        sessGroupOpen:"Розгорнутий",sessRename:"Перейменувати",
         sessAdviceRecent:"З останнього оновлення (~{n} б.)",sessAdviceRecentWin:"За останні ~{n} боїв",sessAdviceNeedRefresh:"На цій сесії занадто багато боїв без знімків. Натисни «Оновити» ще раз після кількох нових боїв — тоді поради рахуватимуть лише останню гру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, шкода ~{dmgPct}% від норми {tier} — зміни танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабше за інші в вибірці (~{normWr}%). Зміни танк.",
@@ -511,11 +528,14 @@ const LANG = {
 <li>Зіграйте кілька боїв</li>
 <li>Натисніть <b>«Оновити всі»</b> — побачите статистику за цю сесію</li>
 </ol>
-<p>Можна мати декілька сесій одночасно. Сесії автоматично групуються по акаунтах — порядок груп можна змінювати кнопками ▲/▼. Перетягуйте сесії за іконку ☰ щоб змінити порядок всередині групи.</p>
-<p><b>Автоскидання по сесіях:</b> кожна сесія має власне автоскидання (щодня / щотижня / щомісяця + час). Біля назви сесії відображається бейдж <b>AUTO ...</b>, якщо автоскидання увімкнене.</p>
-<p><b>Кнопка «A» біля олівця:</b> показує або ховає панель налаштувань автоскидання саме для цієї сесії. Тобто можна тримати картку компактною, а налаштування відкривати тільки коли потрібно. Після зміни розкладу сесія скинеться у наступний запланований момент, а не одразу.</p>
-<p><b>VS СЕРЕДНЄ:</b> показує наскільки ваш вінрейт за сесію відрізняється від вашого ж загального вінрейту на цих танках. Позитивне — граєте краще за свою норму.</p>
-<p><b>Кращий/Гірший танк:</b> натисніть на картку — відкриється повний рейтинг всіх танків сесії.</p>
+<p>Можна мати декілька сесій одночасно. Сесії групуються по акаунтах — порядок груп ▲/▼. Перетягуйте сесії за ☰. Стан розгортання груп акаунтів запам’ятовується (напр. Hunter відкритий, інші згорнуті).</p>
+<p><b>Шестерня ⚙ біля «Оновити всі»:</b> авторозгортання танків, автооновлення та які акаунти тримати відкритими.</p>
+<p><b>Шестерня на картці сесії:</b> перейменувати, основна (ALL) сесія, автоскидання, в архів, видалити. Зовні лишається лише <b>«Скинути»</b>.</p>
+<p><b>Основна сесія (ALL):</b> одна на акаунт — для загальної статистики. На ній попередження не показуються (лише Day/Week). Позначити можна в шестерні картки.</p>
+<p><b>Попередження:</b> лише слабкі танки/класи за останні бої, з кулдауном ~20 боїв на інших. При частій ротації танків — попередження по класу.</p>
+<p><b>Автоскидання:</b> щодня / щотижня / щомісяця + час — у шестерні сесії. Бейдж <b>AUTO ...</b> біля назви, якщо увімкнено.</p>
+<p><b>VS СЕРЕДНЄ:</b> наскільки вінрейт сесії відрізняється від вашої норми на цих танках.</p>
+<p><b>Кращий/Гірший танк:</b> натисніть картку — повний рейтинг танків сесії.</p>
 
 <h4>📦 Архів сесій</h4>
 <p>Архів зберігає завершені сесії. Кожну архівну сесію можна повернути назад або видалити. Архів також використовується для розрахунку рейтингу «За останній час».</p>
@@ -587,9 +607,10 @@ const LANG = {
         mapsResultWin:"Победа",mapsResultLoss:"Поражение",mapsResultDraw:"Ничья",mapsResultUnknown:"—",
         mapsEmpty:"Боёв ещё не зафиксировано. Журнал заполняется автоматически после каждого боя.",
         sessBestTank:"🏆 Лучший танк",sessWorstTank:"💀 Худший танк",
-        sessPrimary:"Основная (за всё время)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на аккаунт — общая статистика без советов.",
+        sessPrimary:"Основная (за всё время)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Одна на аккаунт — общая статистика без предупреждений (только Day/Week).",
         sessAdviceTitle:"Предупреждения",sessAdviceNote:"При частой смене танков — по классу. Иначе — по танку; кулдаун ~20 б. на другом классе/танках.",
-        sessAdvicePrimarySkip:"Советы отключены — основная сессия. Смотри Day/Week для подсказок во время игры.",
+        sessSettings:"Настройки сессии",sessGlobalSettingsTitle:"Настройки сессий",sessGroupOpenHint:"Какие аккаунты держать развёрнутыми:",
+        sessGroupOpen:"Развёрнут",sessRename:"Переименовать",
         sessAdviceRecent:"С последнего обновления (~{n} б.)",sessAdviceRecentWin:"За последние ~{n} боёв",sessAdviceNeedRefresh:"На этой сессии слишком много боёв без снимков. Нажми «Обновить» ещё раз после нескольких новых боёв — советы будут только за последнюю игру.",
         sessAdvSwitch:"{tank} ({battles} б.): WR {wr}%, урон ~{dmgPct}% от нормы {tier} — смени танк.",
         sessAdvSwitchSoft:"{tank} ({battles} б.): WR {wr}% — слабее других в выборке (~{normWr}%). Смени танк.",
@@ -625,11 +646,12 @@ const LANG = {
 <li>Сыграйте несколько боёв</li>
 <li>Нажмите <b>«Обновить все»</b> — увидите статистику за эту сессию</li>
 </ol>
-<p>Можно иметь несколько сессий одновременно. Перетаскивайте сессии за иконку ☰ для изменения порядка.</p>
-<p><b>Автосброс по сессиям:</b> у каждой сессии собственное расписание автосброса (ежедневно / еженедельно / ежемесячно + время). Если автосброс включён, рядом с названием сессии виден бейдж <b>AUTO ...</b>.</p>
-<p><b>Кнопка «A» рядом с карандашом:</b> показывает/скрывает панель настроек автосброса только для текущей сессии. Так карточка остаётся компактной, а настройки открываются по необходимости. После изменения расписания сброс выполнится в следующий запланированный момент, а не сразу.</p>
-<p><b>VS СРЕДНЕЕ:</b> показывает насколько ваш винрейт за сессию отличается от вашего же общего винрейта на этих танках. Положительное — играете лучше нормы.</p>
-<p><b>Лучший/Худший танк:</b> нажмите на карточку — откроется полный рейтинг всех танков сессии.</p>
+<p>Несколько сессий сразу. Группы по аккаунтам ▲/▼, порядок ☰. Состояние свёрнутости аккаунтов запоминается.</p>
+<p><b>⚙ возле «Обновить все»:</b> авторазворот танков, автообновление и какие аккаунты держать открытыми.</p>
+<p><b>⚙ на карточке:</b> переименовать, основная (ALL), автосброс, в архив, удалить. Снаружи только <b>«Сбросить»</b>.</p>
+<p><b>Основная (ALL):</b> одна на аккаунт; предупреждения на ней не показываются.</p>
+<p><b>Предупреждения:</b> слабые танки/классы за последние бои, кулдаун ~20 боёв.</p>
+<p><b>VS СРЕДНЕЕ / Лучший-Худший:</b> как раньше.</p>
 
 <h4>📦 Архив сессий</h4>
 <p>Архив хранит завершённые сессии. Каждую можно восстановить или удалить. Используется для расчёта рейтинга «За последнее время».</p>
@@ -701,9 +723,10 @@ const LANG = {
         mapsResultWin:"Victory",mapsResultLoss:"Defeat",mapsResultDraw:"Draw",mapsResultUnknown:"—",
         mapsEmpty:"No battles recorded yet. The log fills automatically after each battle.",
         sessBestTank:"🏆 Best Tank",sessWorstTank:"💀 Worst Tank",
-        sessPrimary:"Primary (all-time)",sessPrimaryBadge:"ALL",sessPrimaryHint:"One per account — lifetime stats, no tips.",
+        sessPrimary:"Primary (all-time)",sessPrimaryBadge:"ALL",sessPrimaryHint:"One per account — lifetime stats, no warnings (Day/Week only).",
         sessAdviceTitle:"Warnings",sessAdviceNote:"Frequent tank swaps → class warnings. Otherwise per-tank; ~20 bt cooldown on other class/tanks.",
-        sessAdvicePrimarySkip:"Tips disabled — primary session. Use Day/Week for in-game hints.",
+        sessSettings:"Session settings",sessGlobalSettingsTitle:"Session settings",sessGroupOpenHint:"Keep these accounts expanded:",
+        sessGroupOpen:"Expanded",sessRename:"Rename",
         sessAdviceRecent:"Since last refresh (~{n} bt.)",sessAdviceRecentWin:"Last ~{n} battles",sessAdviceNeedRefresh:"Too many battles without snapshots. Press Refresh again after a few new battles — tips will use recent play only.",
         sessAdvSwitch:"{tank} ({battles} bt): WR {wr}%, damage ~{dmgPct}% of tier {tier} norm — switch tank.",
         sessAdvSwitchSoft:"{tank} ({battles} bt): WR {wr}% — weaker than others in window (~{normWr}%). Switch tank.",
@@ -739,9 +762,10 @@ const LANG = {
 <li>Play some battles</li>
 <li>Press <b>"Refresh All"</b> — see stats for that session only</li>
 </ol>
-<p>You can have multiple sessions at once. Drag sessions by the ☰ icon to reorder.</p>
-<p><b>Per-session auto reset:</b> each session has its own auto-reset schedule (daily / weekly / monthly + time). When enabled, an <b>AUTO ...</b> badge is shown next to the session name.</p>
-<p><b>The "A" button near the pencil:</b> shows/hides the auto-reset settings panel for that specific session. This keeps cards compact and lets you open settings only when needed. After editing the schedule, reset runs at the next planned slot, not immediately.</p>
+<p>Multiple sessions; account groups ▲/▼; drag ☰. Account expand/collapse is remembered.</p>
+<p><b>⚙ near Refresh All:</b> expand tanks, auto-refresh, which accounts stay open.</p>
+<p><b>⚙ on a session card:</b> rename, primary (ALL), auto-reset, archive, delete. Only <b>Reset</b> stays outside.</p>
+<p><b>Primary (ALL):</b> one per account; no warnings on it — use Day/Week.</p>
 <p><b>VS Average:</b> shows how your session win rate compares to your all-time win rate on those same tanks. Positive means you're playing above your personal average.</p>
 <p><b>Best/Worst Tank:</b> click the card to open a full ranked list of all session tanks.</p>
 
@@ -815,9 +839,10 @@ const LANG = {
         mapsResultWin:"G'alaba",mapsResultLoss:"Mag'lubiyat",mapsResultDraw:"Durang",mapsResultUnknown:"—",
         mapsEmpty:"Hali janglar qayd etilmagan. Jurnal har bir jangdan keyin avtomatik to'ldiriladi.",
         sessBestTank:"🏆 Eng yaxshi tank",sessWorstTank:"💀 Eng yomon tank",
-        sessPrimary:"Asosiy (butun vaqt)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Har hisobda bitta — umumiy stat, maslahatsiz.",
+        sessPrimary:"Asosiy (butun vaqt)",sessPrimaryBadge:"ALL",sessPrimaryHint:"Har hisobda bitta — umumiy stat, ogohlantirishsiz (faqat Day/Week).",
         sessAdviceTitle:"Ogohlantirishlar",sessAdviceNote:"Tez-tez tank almashtirsang — klass bo'yicha. Aks holda tank; ~20 j. boshqa klass/tanklarda kutish.",
-        sessAdvicePrimarySkip:"Maslahatlar o'chirilgan — asosiy sessiya. O'yin vaqtida Day/Week ga qarang.",
+        sessSettings:"Sessiya sozlamalari",sessGlobalSettingsTitle:"Sessiyalar sozlamalari",sessGroupOpenHint:"Qaysi hisoblarni ochiq saqlash:",
+        sessGroupOpen:"Ochiq",sessRename:"Nomini o'zgartirish",
         sessAdviceRecent:"Oxirgi yangilashdan (~{n} j.)",sessAdviceRecentWin:"So'nggi ~{n} jang",sessAdviceNeedRefresh:"Juda ko'p jang, snapshot yo'q. Bir necha jangdan keyin yana «Yangilash» bosing — maslahatlar faqat so'nggi o'yin uchun.",
         sessAdvSwitch:"{tank} ({battles} j.): WR {wr}%, zarar ~{dmgPct}% {tier} normasidan — tankni almashtiring.",
         sessAdvSwitchSoft:"{tank} ({battles} j.): WR {wr}% — tanlovda boshqalardan past (~{normWr}%). Tankni almashtiring.",
@@ -853,9 +878,10 @@ const LANG = {
 <li>Bir necha jang o'ynang</li>
 <li><b>"Barchasini yangilash"</b> bosing — faqat shu sessiya statistikasini ko'ring</li>
 </ol>
-<p>Bir vaqtda bir nechta sessiya bo'lishi mumkin. ☰ belgisi orqali tartibni o'zgartiring.</p>
-<p><b>Sessiya bo'yicha avto reset:</b> har bir sessiya uchun alohida jadval bor (har kuni / har hafta / har oy + vaqt). Yoqilganda sessiya nomi yonida <b>AUTO ...</b> belgisi ko'rinadi.</p>
-<p><b>Qalam yonidagi "A" tugmasi:</b> aynan shu sessiya uchun avto reset panelini ko'rsatadi/yashiradi. Bu kartani ixcham saqlaydi va sozlamalarni faqat kerak bo'lganda ochishga yordam beradi. Jadval o'zgartirilgandan keyin reset darhol emas, keyingi rejalangan vaqtda ishlaydi.</p>
+<p>Bir nechta sessiya; hisob guruhlari ▲/▼; ☰. Hisob ochiq/yopiq holati eslab qolinadi.</p>
+<p><b>⚙ "Barchasini yangilash" yonida:</b> tanklarni ochish, avto-yangilash, qaysi hisoblar ochiq.</p>
+<p><b>⚙ kartada:</b> nom, asosiy (ALL), avto reset, arxiv, o'chirish. Tashqarida faqat <b>Qayta boshlash</b>.</p>
+<p><b>Asosiy (ALL):</b> hisobda bitta; ogohlantirishlar yo'q — Day/Week.</p>
 <p><b>VS O'rtacha:</b> sessiya davomidagi g'alaba foizingizni shu tanklardagi umumiy g'alaba foizingiz bilan solishtiradi.</p>
 <p><b>Eng yaxshi/yomon tank:</b> kartochkani bosing — sessiya tanklarining to'liq reytingini ko'ring.</p>
 
@@ -884,6 +910,8 @@ function applyI18n() {
     document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
         el.placeholder = t(el.dataset.i18nPlaceholder);
     });
+    const gear = $("sessGlobalSettingsBtn");
+    if (gear) gear.title = t("sessGlobalSettingsTitle");
     // Dynamic selects
     const tf = document.getElementById("tierFilter");
     if (tf && tf.options[0]) tf.options[0].text = t("allTiers");
@@ -1842,7 +1870,6 @@ function renderSessions() {
         const avgFrags = tb > 0 ? (tf / tb).toFixed(2) : "0";
         const avgSpot = tb > 0 ? (tsp / tb).toFixed(1) : "—";
         const ar = _sessionAutoResetCfg(s);
-        const arUiOpen = !!s.autoResetUiOpen;
         const arLast = ar.lastRun ? new Date(ar.lastRun).toLocaleString() : t("sessAutoResetNever");
         const arNext = ar.enabled ? _nextRun(new Date(), ar).toLocaleString() : "—";
         const dowKeyMap = { 1: "dowMon", 2: "dowTue", 3: "dowWed", 4: "dowThu", 5: "dowFri", 6: "dowSat", 7: "dowSun" };
@@ -1858,42 +1885,49 @@ function renderSessions() {
         const primaryBadge = s.isPrimary
             ? `<span style="font-size:.68rem;color:#c9a227;border:1px solid #c9a227;border-radius:999px;padding:1px 6px;letter-spacing:.04em" title="${t("sessPrimaryHint")}">${t("sessPrimaryBadge")}</span>`
             : "";
+        const settingsOpen = !!(s.settingsUiOpen || s.autoResetUiOpen);
 
         return `<div class="tanks-section sess-draggable" style="margin-bottom:15px" data-sess="${i}" draggable="true">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <span class="drag-handle" title="Drag to reorder">&#9776;</span>
-                    <strong style="color:var(--acc);font-size:1rem;cursor:pointer" onclick="renameSession(${i})" title="Click to rename">${s.name}</strong>
+                    <strong style="color:var(--acc);font-size:1rem">${s.name}</strong>
                     ${primaryBadge}${arBadge}
-                    <label style="display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--t2);cursor:pointer" title="${t("sessPrimaryHint")}">
-                        <input type="checkbox"${s.isPrimary ? " checked" : ""} onchange="toggleSessionPrimary(${i})">
-                        <span>${t("sessPrimary")}</span>
-                    </label>
                     <span style="color:var(--t2);font-size:.8rem">${timeStr}</span>
                 </div>
-                <div style="display:flex;gap:6px">
-                    <button class="btn btn-ghost btn-sm" onclick="renameSession(${i})">&#9998;</button>
-                    <button class="btn btn-ghost btn-sm" onclick="toggleSessionAutoResetPanel(${i})" title="${t("sessAutoResetEnable")}" style="font-weight:700">A</button>
+                <div style="display:flex;gap:6px;align-items:center">
                     <button class="btn btn-sm" style="background:var(--bg2);color:var(--t1);border:1px solid var(--brd)" onclick="resetSession(${i})">${t("sessReset")}</button>
+                    <button class="btn btn-ghost btn-sm sess-gear-btn" onclick="toggleSessionSettingsPanel(${i})" title="${t("sessSettings")}">&#9881;</button>
+                </div>
+            </div>
+            <div class="sess-settings-panel${settingsOpen ? " open" : ""}">
+                <div class="sess-settings-row">
+                    <button class="btn btn-ghost btn-sm" onclick="renameSession(${i})">${t("sessRename")}</button>
                     <button class="btn btn-sm" style="background:var(--bg2);color:var(--t2);border:1px solid var(--brd)" onclick="archiveSession(${i})">${t("sessArchiveBtn")}</button>
                     <button class="btn btn-danger btn-sm" onclick="deleteSession(${i})">${t("sessionStop")}</button>
                 </div>
-            </div>
-            <div style="display:${arUiOpen ? "flex" : "none"};align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 8px 0">
-                <label style="display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--t2);cursor:pointer">
-                    <input type="checkbox" data-ar-idx="${i}" data-ar-field="enabled"${ar.enabled ? " checked" : ""}>
-                    <span>${t("sessAutoResetEnable")}</span>
+                <div class="sess-settings-divider"></div>
+                <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--t2);cursor:pointer" title="${t("sessPrimaryHint")}">
+                    <input type="checkbox"${s.isPrimary ? " checked" : ""} onchange="toggleSessionPrimary(${i})">
+                    <span>${t("sessPrimary")}</span>
                 </label>
-                <select data-ar-idx="${i}" data-ar-field="period" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem">
-                    <option value="daily"${ar.period === "daily" ? " selected" : ""}>${t("sessAutoResetDaily")}</option>
-                    <option value="weekly"${ar.period === "weekly" ? " selected" : ""}>${t("sessAutoResetWeekly")}</option>
-                    <option value="monthly"${ar.period === "monthly" ? " selected" : ""}>${t("sessAutoResetMonthly")}</option>
-                </select>
-                <select data-ar-idx="${i}" data-ar-field="weekday" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem;${ar.period === "weekly" ? "" : "display:none;"}">
-                    <option value="1"${ar.weekday===1?" selected":""}>${t("dowMon")}</option><option value="2"${ar.weekday===2?" selected":""}>${t("dowTue")}</option><option value="3"${ar.weekday===3?" selected":""}>${t("dowWed")}</option><option value="4"${ar.weekday===4?" selected":""}>${t("dowThu")}</option><option value="5"${ar.weekday===5?" selected":""}>${t("dowFri")}</option><option value="6"${ar.weekday===6?" selected":""}>${t("dowSat")}</option><option value="7"${ar.weekday===7?" selected":""}>${t("dowSun")}</option>
-                </select>
-                <select data-ar-idx="${i}" data-ar-field="monthday" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem;${ar.period === "monthly" ? "" : "display:none;"}">${Array.from({length:31},(_,k)=>`<option value="${k+1}"${ar.monthday===k+1?" selected":""}>${k+1}</option>`).join("")}</select>
-                <input data-ar-idx="${i}" data-ar-field="time" type="time" value="${ar.time}" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem">
+                <div class="sess-settings-divider"></div>
+                <div class="sess-settings-row">
+                    <label style="display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--t2);cursor:pointer">
+                        <input type="checkbox" data-ar-idx="${i}" data-ar-field="enabled"${ar.enabled ? " checked" : ""}>
+                        <span>${t("sessAutoResetEnable")}</span>
+                    </label>
+                    <select data-ar-idx="${i}" data-ar-field="period" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem">
+                        <option value="daily"${ar.period === "daily" ? " selected" : ""}>${t("sessAutoResetDaily")}</option>
+                        <option value="weekly"${ar.period === "weekly" ? " selected" : ""}>${t("sessAutoResetWeekly")}</option>
+                        <option value="monthly"${ar.period === "monthly" ? " selected" : ""}>${t("sessAutoResetMonthly")}</option>
+                    </select>
+                    <select data-ar-idx="${i}" data-ar-field="weekday" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem;${ar.period === "weekly" ? "" : "display:none;"}">
+                        <option value="1"${ar.weekday===1?" selected":""}>${t("dowMon")}</option><option value="2"${ar.weekday===2?" selected":""}>${t("dowTue")}</option><option value="3"${ar.weekday===3?" selected":""}>${t("dowWed")}</option><option value="4"${ar.weekday===4?" selected":""}>${t("dowThu")}</option><option value="5"${ar.weekday===5?" selected":""}>${t("dowFri")}</option><option value="6"${ar.weekday===6?" selected":""}>${t("dowSat")}</option><option value="7"${ar.weekday===7?" selected":""}>${t("dowSun")}</option>
+                    </select>
+                    <select data-ar-idx="${i}" data-ar-field="monthday" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem;${ar.period === "monthly" ? "" : "display:none;"}">${Array.from({length:31},(_,k)=>`<option value="${k+1}"${ar.monthday===k+1?" selected":""}>${k+1}</option>`).join("")}</select>
+                    <input data-ar-idx="${i}" data-ar-field="time" type="time" value="${ar.time}" style="padding:3px 5px;border:1px solid var(--brd);border-radius:6px;background:var(--bg-in);color:var(--t1);font-size:.75rem">
+                </div>
                 <span style="font-size:.72rem;color:var(--t2)">${t("sessAutoResetLast")}: ${arLast} • Next: ${arNext}</span>
             </div>
             <div class="session-stats-grid">
@@ -1924,11 +1958,16 @@ function renderSessions() {
         </div>`;
     };
 
+    const openMap = getSessGroupOpenMap();
     if (groups.length === 1) {
         container.innerHTML = groups[0].indices.map(i => renderCard(sessions[i], i)).join("");
     } else {
         container.innerHTML = groups.map((g, gi) => {
-            const isOpen = expandedGroups.has(String(g.accountId)) || expandedGroups.size === 0;
+            const key = String(g.accountId);
+            let isOpen;
+            if (expandedGroups.size > 0) isOpen = expandedGroups.has(key);
+            else if (Object.prototype.hasOwnProperty.call(openMap, key)) isOpen = !!openMap[key];
+            else isOpen = true;
             return `<details class="sess-group" data-acc-id="${g.accountId}"${isOpen ? " open" : ""} style="margin-bottom:12px">
                 <summary style="cursor:pointer;font-size:1.05rem;font-weight:600;color:var(--acc);padding:8px 0;display:flex;align-items:center;gap:8px">
                     ${g.nick} <span style="color:var(--t2);font-weight:400;font-size:.85rem">(${g.indices.length})</span>
@@ -1941,6 +1980,14 @@ function renderSessions() {
             </details>`;
         }).join("");
     }
+
+    container.querySelectorAll("details.sess-group").forEach(det => {
+        det.addEventListener("toggle", () => {
+            setSessGroupOpen(det.dataset.accId, det.open);
+            renderSessAccountOpenPrefs();
+        });
+    });
+    renderSessAccountOpenPrefs();
 
     // Attach sort click handlers to session table headers
     container.querySelectorAll("th.sortable[data-ssort]").forEach(th => {
@@ -2187,6 +2234,13 @@ let isRefreshing = false;
 function setupAutoRefresh() {
     const cb = $("sessAutoRefresh");
     const sel = $("sessAutoInterval");
+    const expand = $("sessAutoExpand");
+    if (expand) {
+        expand.checked = localStorage.getItem("clstats_autoexpand") === "1";
+        expand.addEventListener("change", () => {
+            localStorage.setItem("clstats_autoexpand", expand.checked ? "1" : "0");
+        });
+    }
     if (!cb) return;
 
     cb.addEventListener("change", () => {
@@ -2307,12 +2361,57 @@ function renameSession(idx) {
     renderSessions();
 }
 
-function toggleSessionAutoResetPanel(idx) {
+function toggleSessionSettingsPanel(idx) {
     const sessions = getSessions();
     if (!sessions[idx]) return;
-    sessions[idx].autoResetUiOpen = !sessions[idx].autoResetUiOpen;
+    const open = !(sessions[idx].settingsUiOpen || sessions[idx].autoResetUiOpen);
+    sessions.forEach((s, i) => {
+        s.settingsUiOpen = i === idx ? open : false;
+        s.autoResetUiOpen = false;
+    });
     saveSessions(sessions);
     renderSessions();
+}
+
+function getSessGroupOpenMap() {
+    try { return JSON.parse(localStorage.getItem("clstats_sess_group_open") || "{}"); }
+    catch { return {}; }
+}
+function setSessGroupOpen(accountId, open) {
+    const m = getSessGroupOpenMap();
+    m[String(accountId)] = !!open;
+    localStorage.setItem("clstats_sess_group_open", JSON.stringify(m));
+}
+function toggleSessGlobalSettings() {
+    const panel = $("sessGlobalSettings");
+    if (!panel) return;
+    panel.classList.toggle("open");
+    if (panel.classList.contains("open")) renderSessAccountOpenPrefs();
+}
+function renderSessAccountOpenPrefs() {
+    const box = $("sessAccountOpenPrefs");
+    if (!box) return;
+    const sessions = getSessions();
+    const seen = new Map();
+    sessions.forEach(s => {
+        const id = String(s.accountId || "unknown");
+        if (!seen.has(id)) seen.set(id, s.accountNick || id);
+    });
+    if (!seen.size) {
+        box.innerHTML = `<span style="font-size:.78rem;color:var(--t2)">—</span>`;
+        return;
+    }
+    const openMap = getSessGroupOpenMap();
+    box.innerHTML = [...seen.entries()].map(([id, nick]) => {
+        const checked = Object.prototype.hasOwnProperty.call(openMap, id) ? !!openMap[id] : true;
+        return `<label><input type="checkbox" data-group-open="${id}"${checked ? " checked" : ""}> <span>${nick}</span> <span style="opacity:.7">(${t("sessGroupOpen")})</span></label>`;
+    }).join("");
+    box.querySelectorAll("[data-group-open]").forEach(el => {
+        el.addEventListener("change", () => {
+            setSessGroupOpen(el.getAttribute("data-group-open"), el.checked);
+            renderSessions();
+        });
+    });
 }
 
 async function resetSession(idx, opts = {}) {
@@ -3555,12 +3654,7 @@ function getSessionAdviceTips(sess) {
 }
 
 function renderSessionAdvice(sess, sessIdx) {
-    if (sess.isPrimary) {
-        return `<div class="sess-advice">
-            <div style="font-size:.78rem;color:var(--t2);font-weight:600;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">${t("sessAdviceTitle")}</div>
-            <div class="sess-advice-item sess-advice-hint"><span>${t("sessAdvicePrimarySkip")}</span></div>
-        </div>`;
-    }
+    if (sess.isPrimary) return "";
 
     const before = JSON.stringify({ t: sess.adviceBlocks, c: sess.adviceClassBlocks });
     const { tips, meta } = getSessionAdviceTips(sess);
